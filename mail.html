@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Email List</title>
+
+<style>
+body{
+    font-family:Arial,sans-serif;
+    max-width:900px;
+    margin:auto;
+    padding:20px;
+}
+
+h1{
+    text-align:center;
+}
+
+#search{
+    width:100%;
+    padding:12px;
+    font-size:18px;
+    margin-bottom:20px;
+}
+
+.email{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:12px;
+    margin-bottom:8px;
+    border:1px solid #ddd;
+    border-radius:8px;
+}
+
+.mail{
+    word-break:break-all;
+    font-size:18px;
+}
+
+button{
+    padding:8px 15px;
+    cursor:pointer;
+    font-size:16px;
+}
+</style>
+</head>
+
+<body>
+
+<h1>Email List</h1>
+
+<input type="text" id="search" placeholder="Search email...">
+
+
+<div id="emails"></div>
+
+
+<script>
+
+const emailList = [
+"bkashs247@gmail.com",
+"bkashs24.7@gmail.com",
+"bkashs2.47@gmail.com",
+"bkashs2.4.7@gmail.com",
+"bkashs.247@gmail.com",
+"bkashs.24.7@gmail.com",
+"bkashs.2.47@gmail.com",
+"bkashs.2.4.7@gmail.com",
+"bkash.s247@gmail.com",
+"bkash.s24.7@gmail.com",
+"bkash.s2.47@gmail.com",
+"bkash.s2.4.7@gmail.com",
+"bkash.s.247@gmail.com",
+"bkash.s.24.7@gmail.com",
+"bkash.s.2.47@gmail.com",
+"bkash.s.2.4.7@gmail.com",
+"bkas.hs247@gmail.com",
+"bkas.hs24.7@gmail.com",
+"bkas.hs2.47@gmail.com",
+"bkas.hs2.4.7@gmail.com",
+"bkas.hs.247@gmail.com",
+"bkas.hs.24.7@gmail.com",
+"bkas.hs.2.47@gmail.com",
+"bkas.hs.2.4.7@gmail.com",
+"bkas.h.s247@gmail.com",
+"bkas.h.s24.7@gmail.com",
+"bkas.h.s2.47@gmail.com",
+"bkas.h.s2.4.7@gmail.com",
+"bkas.h.s.247@gmail.com",
+"bkas.h.s.24.7@gmail.com",
+"bkas.h.s.2.47@gmail.com",
+"bkas.h.s.2.4.7@gmail.com",
+"bka.shs247@gmail.com",
+"bka.shs24.7@gmail.com",
+"bka.shs2.47@gmail.com",
+"bka.shs2.4.7@gmail.com",
+"bka.shs.247@gmail.com",
+"bka.shs.24.7@gmail.com",
+"bka.shs.2.47@gmail.com",
+"bka.shs.2.4.7@gmail.com",
+"bka.sh.s247@gmail.com",
+"bka.sh.s24.7@gmail.com",
+"bka.sh.s2.47@gmail.com",
+"bka.sh.s2.4.7@gmail.com",
+"bka.sh.s.247@gmail.com",
+"bka.sh.s.24.7@gmail.com",
+"bka.sh.s.2.47@gmail.com",
+"bka.sh.s.2.4.7@gmail.com",
+"bka.s.hs247@gmail.com",
+"bka.s.hs24.7@gmail.com",
+"bka.s.hs2.47@gmail.com",
+"bka.s.hs2.4.7@gmail.com",
+"bka.s.hs.247@gmail.com",
+"bka.s.hs.24.7@gmail.com",
+"bka.s.hs.2.47@gmail.com",
+"bka.s.hs.2.4.7@gmail.com",
+"bka.s.h.s247@gmail.com",
+"bka.s.h.s24.7@gmail.com",
+"bka.s.h.s2.47@gmail.com",
+"bka.s.h.s2.4.7@gmail.com",
+"bka.s.h.s.247@gmail.com",
+"bka.s.h.s.24.7@gmail.com",
+"bka.s.h.s.2.47@gmail.com",
+"bka.s.h.s.2.4.7@gmail.com",
+"bk.ashs247@gmail.com",
+"bk.ashs24.7@gmail.com",
+"bk.ashs2.47@gmail.com",
+"bk.ashs2.4.7@gmail.com",
+"bk.ashs.247@gmail.com",
+"bk.ashs.24.7@gmail.com",
+"bk.ashs.2.47@gmail.com",
+"bk.ashs.2.4.7@gmail.com",
+"bk.ash.s247@gmail.com",
+"bk.ash.s24.7@gmail.com",
+"bk.ash.s2.47@gmail.com",
+"bk.ash.s2.4.7@gmail.com",
+"bk.ash.s.247@gmail.com",
+"bk.ash.s.24.7@gmail.com",
+"bk.ash.s.2.47@gmail.com",
+"bk.ash.s.2.4.7@gmail.com",
+"bk.as.hs247@gmail.com",
+"bk.as.hs24.7@gmail.com",
+"bk.as.hs2.47@gmail.com",
+"bk.as.hs2.4.7@gmail.com",
+"bk.as.hs.247@gmail.com",
+"bk.as.hs.24.7@gmail.com",
+"bk.as.hs.2.47@gmail.com",
+"bk.as.hs.2.4.7@gmail.com",
+"bk.as.h.s247@gmail.com",
+"bk.as.h.s24.7@gmail.com",
+"bk.as.h.s2.47@gmail.com",
+"bk.as.h.s2.4.7@gmail.com",
+"bk.as.h.s.247@gmail.com",
+"bk.as.h.s.24.7@gmail.com",
+"bk.as.h.s.2.47@gmail.com",
+"bk.as.h.s.2.4.7@gmail.com",
+"bk.a.shs247@gmail.com",
+"bk.a.shs24.7@gmail.com",
+"bk.a.shs2.47@gmail.com",
+"bk.a.shs2.4.7@gmail.com",
+"bk.a.shs.247@gmail.com",
+"bk.a.shs.24.7@gmail.com",
+"bk.a.shs.2.47@gmail.com",
+"bk.a.shs.2.4.7@gmail.com",
+"bk.a.sh.s247@gmail.com",
+"bk.a.sh.s24.7@gmail.com",
+"bk.a.sh.s2.47@gmail.com",
+"bk.a.sh.s2.4.7@gmail.com",
+"bk.a.sh.s.247@gmail.com",
+"bk.a.sh.s.24.7@gmail.com",
+"bk.a.sh.s.2.47@gmail.com",
+"bk.a.sh.s.2.4.7@gmail.com",
+"bk.a.s.hs247@gmail.com",
+"bk.a.s.hs24.7@gmail.com",
+"bk.a.s.hs2.47@gmail.com",
+"bk.a.s.hs2.4.7@gmail.com",
+"bk.a.s.hs.247@gmail.com",
+"bk.a.s.hs.24.7@gmail.com",
+"bk.a.s.hs.2.47@gmail.com",
+"bk.a.s.hs.2.4.7@gmail.com",
+"bk.a.s.h.s247@gmail.com",
+"bk.a.s.h.s24.7@gmail.com",
+"bk.a.s.h.s2.47@gmail.com",
+"bk.a.s.h.s2.4.7@gmail.com",
+"bk.a.s.h.s.247@gmail.com",
+"bk.a.s.h.s.24.7@gmail.com",
+"bk.a.s.h.s.2.47@gmail.com",
+"bk.a.s.h.s.2.4.7@gmail.com"
+];
+
+
+
+function showEmails(list){
+
+let html="";
+
+list.forEach(email=>{
+
+html+=`
+<div class="email">
+
+<span class="mail">${email}</span>
+
+<button onclick="copyMail('${email}')">
+Copy
+</button>
+
+</div>
+`;
+
+});
+
+document.getElementById("emails").innerHTML=html;
+
+}
+
+
+function copyMail(email){
+
+navigator.clipboard.writeText(email);
+
+alert("Copied:\n"+email);
+
+}
+
+
+
+document.getElementById("search").addEventListener("input",function(){
+
+let keyword=this.value.toLowerCase();
+
+let result=emailList.filter(email=>
+email.toLowerCase().includes(keyword)
+);
+
+showEmails(result);
+
+});
+
+
+showEmails(emailList);
+
+
+</script>
+
+</body>
+</html>
