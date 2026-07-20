@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gmail Dot Generator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0f1115;
+    --card:#171a21;
+    --line:#262a34;
+    --text:#eef0f4;
+    --muted:#8b90a0;
+    --blue:#4285F4;
+    --red:#EA4335;
+    --yellow:#FBBC05;
+    --green:#34A853;
+    --amber:#f59e0b;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    min-height:100vh;
+    background:
+      radial-gradient(circle at 15% 0%, rgba(66,133,244,0.10), transparent 45%),
+      radial-gradient(circle at 85% 100%, rgba(52,168,83,0.08), transparent 45%),
+      var(--bg);
+    color:var(--text);
+    font-family:'Inter',sans-serif;
+    display:flex;
+    align-items:flex-start;
+    justify-content:center;
+    padding:32px 16px;
+  }
+  .wrap{width:100%;max-width:560px;}
+  .brand{display:flex;align-items:center;gap:10px;margin-bottom:22px;}
+  .dot-row{display:flex;gap:5px;}
+  .dot{width:9px;height:9px;border-radius:50%;}
+  .dot.b{background:var(--blue);}
+  .dot.r{background:var(--red);}
+  .dot.y{background:var(--yellow);}
+  .dot.g{background:var(--green);}
+  .brand span{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:14px;color:var(--muted);letter-spacing:0.02em;}
+  h1{font-family:'Space Grotesk',sans-serif;font-size:clamp(26px,6vw,34px);font-weight:700;line-height:1.15;margin:0 0 6px;}
+  h1 em{font-style:normal;background:linear-gradient(90deg,var(--blue),var(--green));-webkit-background-clip:text;background-clip:text;color:transparent;}
+  .sub{color:var(--muted);font-size:14.5px;margin:0 0 26px;}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px;}
+  .row{display:flex;gap:10px;}
+  input[type="text"]{
+    flex:1;min-width:0;background:#0f1115;border:1px solid var(--line);color:var(--text);
+    font-family:'Space Grotesk',sans-serif;font-size:15px;padding:12px 14px;border-radius:10px;outline:none;
+    transition:border-color .15s ease;
+  }
+  input[type="text"]::placeholder{color:#565c6c;font-family:'Inter',sans-serif;font-size:14px;}
+  input[type="text"]:focus{border-color:var(--blue);}
+  button.generate{
+    width:100%;margin-top:12px;padding:13px;border:none;border-radius:10px;
+    background:linear-gradient(90deg,var(--blue),#357ae8);color:#fff;
+    font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:15px;cursor:pointer;
+    transition:transform .12s ease, box-shadow .12s ease;
+  }
+  button.generate:hover{transform:translateY(-1px);box-shadow:0 8px 20px rgba(66,133,244,0.25);}
+  button.generate:active{transform:translateY(0);}
+
+  .meta{
+    display:flex;align-items:center;justify-content:space-between;
+    margin-top:16px;font-size:12.5px;color:var(--muted);
+  }
+  .meta .count{color:var(--text);font-weight:600;font-family:'Space Grotesk',sans-serif;}
+  .toolbtn{
+    background:#1e222b;border:1px solid var(--line);color:var(--muted);
+    font-family:'Inter',sans-serif;font-size:12.5px;font-weight:500;
+    padding:7px 11px;border-radius:8px;cursor:pointer;transition:all .15s ease;
+  }
+  .toolbtn:hover{color:var(--text);border-color:#3a3f4c;}
+  .toolbtn.copied{color:var(--green);border-color:var(--green);}
+  .toolgroup{display:flex;gap:8px;}
+
+  .hint{font-size:12px;color:#565c6c;margin-top:10px;}
+
+  .results{
+    margin-top:12px;
+    display:flex;flex-direction:column;gap:8px;
+  }
+
+  li, .result-item{
+    display:flex;align-items:center;justify-content:space-between;gap:10px;
+    background:#0f1115;border:1px solid var(--line);border-radius:9px;
+    padding:9px 12px;cursor:pointer;user-select:none;
+    transition:background .15s ease, border-color .15s ease;
+    list-style:none;
+  }
+  .result-item:hover{background:#1a1e27;}
+  .result-item .num{
+    flex-shrink:0;background:#1e222b;color:var(--muted);font-size:11.5px;
+    min-width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    font-family:'Space Grotesk',sans-serif;
+  }
+  .result-item .addr{
+    font-family:'Space Grotesk',sans-serif;font-size:13.5px;font-weight:500;
+    word-break:break-all;flex:1;text-align:center;
+  }
+  .result-item .addr .at{color:var(--muted);}
+  .result-item .mark{flex-shrink:0;font-size:12px;color:#565c6c;font-family:'Inter',sans-serif;}
+
+  .result-item.copied{background:rgba(52,168,83,0.10);border-color:var(--green);}
+  .result-item.copied .num{background:var(--green);color:#0f1115;font-weight:700;}
+  .result-item.copied .mark{color:var(--green);}
+
+  .result-item.used{background:rgba(245,158,11,0.08);border-color:var(--amber);}
+  .result-item.used .num{background:var(--amber);color:#0f1115;font-weight:700;}
+  .result-item.used .mark{color:var(--amber);}
+
+  .empty{color:#565c6c;font-size:13.5px;text-align:center;padding:22px 0 4px;}
+  .warn{
+    margin-top:14px;background:rgba(251,188,5,0.08);border:1px solid rgba(251,188,5,0.35);
+    color:#f4c440;font-size:12.5px;border-radius:10px;padding:10px 12px;line-height:1.5;
+  }
+  footer{text-align:center;color:#4a4f5c;font-size:12px;margin-top:22px;}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="brand">
+    <div class="dot-row"><div class="dot b"></div><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div></div>
+    <span>DOT VARIATION GENERATOR</span>
+  </div>
+
+  <h1>Every <em>dot</em> version of your Gmail</h1>
+  <p class="sub">Gmail ignores dots in the username, so all of these deliver to the same inbox. Enter your address, generate the full set, then click any row to copy it.</p>
+
+  <div class="card">
+    <div class="row">
+      <input type="text" id="emailInput" placeholder="fdjkkgfk@gmail.com" autocomplete="off">
+    </div>
+    <button class="generate" id="genBtn">Generate all variations</button>
+
+    <div id="metaRow" class="meta" style="display:none;">
+      <span><span class="count" id="countText">0</span> combinations</span>
+      <div class="toolgroup">
+        <button class="toolbtn" id="downloadBtn">Download .txt</button>
+      </div>
+    </div>
+
+    <div id="warnBox"></div>
+
+    <ul class="results" id="results">
+      <li class="empty" style="cursor:default;border:none;background:none;justify-content:center;">Your generated addresses will show up here.</li>
+    </ul>
+
+    <p class="hint" id="hintText" style="display:none;">Click a row to copy it — the last one you copied stays green, earlier ones you've clicked turn amber.</p>
+  </div>
+
+  <footer>All variations point to the same inbox — this doesn't create new accounts.</footer>
+</div>
+
+<script>
+const RENDER_LIMIT = 4000; // cap on how many rows we paint in the DOM
+let currentFull = [];
+let lastCopied = null; // { el, markEl }
+
+function parseInput(raw){
+  let v = raw.trim();
+  let domain = 'gmail.com';
+  if(v.includes('@')){
+    const parts = v.split('@');
+    v = parts[0];
+    if(parts[1]) domain = parts[1].toLowerCase();
+  }
+  const local = v.toLowerCase().replace(/[^a-z0-9]/g,'');
+  return { local, domain };
+}
+
+function allDotVariants(local){
+  const n = local.length;
+  if(n <= 1) return [local];
+  const gaps = n - 1;
+  const total = Math.pow(2, gaps);
+  const out = new Array(total);
+  for(let mask = 0; mask < total; mask++){
+    let s = local[0];
+    for(let i = 0; i < gaps; i++){
+      if(mask & (1 << i)) s += '.';
+      s += local[i + 1];
+    }
+    out[mask] = s;
+  }
+  return out;
+}
+
+function fallbackCopy(text){
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.position = 'fixed';
+  ta.style.opacity = '0';
+  document.body.appendChild(ta);
+  ta.focus();
+  ta.select();
+  let ok = false;
+  try{ ok = document.execCommand('copy'); }catch(err){ ok = false; }
+  document.body.removeChild(ta);
+  return ok;
+}
+
+function showCopied(li, mark){
+  if(lastCopied && lastCopied.li !== li){
+    lastCopied.li.classList.remove('copied');
+    lastCopied.li.classList.add('used');
+    lastCopied.mark.textContent = 'copied before';
+  }
+  li.classList.remove('used');
+  li.classList.add('copied');
+  mark.textContent = 'copied';
+  lastCopied = { li, mark };
+}
+
+function copyAddress(text, li, mark){
+  if(navigator.clipboard && window.isSecureContext){
+    navigator.clipboard.writeText(text).then(() => showCopied(li, mark))
+      .catch(() => { if(fallbackCopy(text)) showCopied(li, mark); });
+  }else{
+    if(fallbackCopy(text)) showCopied(li, mark);
+  }
+}
+
+function generate(){
+  const raw = document.getElementById('emailInput').value;
+  const { local, domain } = parseInput(raw);
+  const resultsEl = document.getElementById('results');
+  const metaRow = document.getElementById('metaRow');
+  const warnBox = document.getElementById('warnBox');
+  const hintText = document.getElementById('hintText');
+  resultsEl.innerHTML = '';
+  warnBox.innerHTML = '';
+  lastCopied = null;
+
+  if(!local){
+    resultsEl.innerHTML = '<li class="empty" style="cursor:default;border:none;background:none;justify-content:center;">Enter a username to generate variations.</li>';
+    metaRow.style.display = 'none';
+    hintText.style.display = 'none';
+    return;
+  }
+
+  if(local.length > 24){
+    warnBox.innerHTML = `<div class="warn">That username is long — the full dot-combination count grows exponentially (2^(n-1)). Try a shorter username to keep this from freezing your browser.</div>`;
+    metaRow.style.display = 'none';
+    hintText.style.display = 'none';
+    return;
+  }
+
+  const variants = allDotVariants(local);
+  currentFull = variants.map(v => `${v}@${domain}`);
+
+  document.getElementById('countText').textContent = variants.length.toLocaleString();
+  metaRow.style.display = 'flex';
+  hintText.style.display = 'block';
+
+  if(variants.length > RENDER_LIMIT){
+    warnBox.innerHTML = `<div class="warn">${variants.length.toLocaleString()} total combinations — showing the first ${RENDER_LIMIT.toLocaleString()} below. Use "Download .txt" to get the complete list.</div>`;
+  }
+
+  const frag = document.createDocumentFragment();
+  const showCount = Math.min(variants.length, RENDER_LIMIT);
+  for(let i = 0; i < showCount; i++){
+    const full = currentFull[i];
+    const li = document.createElement('li');
+    li.className = 'result-item';
+
+    const num = document.createElement('span');
+    num.className = 'num';
+    num.textContent = i + 1;
+
+    const addr = document.createElement('span');
+    addr.className = 'addr';
+    addr.innerHTML = `${variants[i]}<span class="at">@${domain}</span>`;
+
+    const mark = document.createElement('span');
+    mark.className = 'mark';
+    mark.textContent = '';
+
+    li.appendChild(num);
+    li.appendChild(addr);
+    li.appendChild(mark);
+    li.addEventListener('click', () => copyAddress(full, li, mark));
+
+    frag.appendChild(li);
+  }
+  resultsEl.appendChild(frag);
+}
+
+document.getElementById('genBtn').addEventListener('click', generate);
+document.getElementById('emailInput').addEventListener('keydown', (e) => {
+  if(e.key === 'Enter') generate();
+});
+
+document.getElementById('downloadBtn').addEventListener('click', () => {
+  if(!currentFull.length) return;
+  const blob = new Blob([currentFull.join('\n')], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'gmail-dot-variations.txt';
+  a.click();
+  URL.revokeObjectURL(url);
+});
+</script>
+
+</body>
+</html>
