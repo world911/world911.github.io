@@ -17,12 +17,15 @@ h2 {
     text-align: center;
 }
 
+/* Bulk address paste box */
 textarea {
     width: 100%;
-    height: 150px;
-    padding: 10px;
-    font-size: 14px;
+    min-height: 150px;
+    max-height: 600px;
+    padding: 12px;
+    font-size: 15px;
     resize: vertical;
+    overflow: auto;
     box-sizing: border-box;
     margin-bottom: 15px;
 }
@@ -44,14 +47,15 @@ button {
 }
 
 #status {
-    font-size: 14px;
     margin: 10px 0;
+    font-size: 14px;
 }
 
 table {
     width: 100%;
     border-collapse: collapse;
     margin-top: 15px;
+    word-break: break-all;
 }
 
 th,
@@ -72,12 +76,9 @@ th {
         flex-direction: column;
     }
 
-    table {
-        font-size: 12px;
-    }
-
     th,
     td {
+        font-size: 12px;
         padding: 6px;
     }
 }
