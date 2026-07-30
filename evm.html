@@ -2,69 +2,58 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>EVM Bulk Wallet Checker</title>
-<link rel="stylesheet" href="evm-style.css">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EVM Wallet Checker</title>
+<link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-<h1>EVM Bulk Wallet Checker</h1>
+<div class="container">
 
-<textarea id="addresses" placeholder="Paste addresses one per line"></textarea>
+<h2>EVM Wallet Checker</h2>
 
-<br>
+<textarea id="addresses" placeholder="Paste wallet addresses (one per line)"></textarea>
+
+<div class="controls">
 
 <select id="network">
-
 <option value="all">All Networks</option>
-
-<option value="eth">Ethereum</option>
+<option value="ethereum">Ethereum</option>
 <option value="bsc">BNB Chain</option>
 <option value="polygon">Polygon</option>
-<option value="arb">Arbitrum</option>
-<option value="base">Base</option>
-<option value="op">Optimism</option>
-
-<option value="avax">Avalanche</option>
-<option value="linea">Linea</option>
-<option value="zksync">zkSync Era</option>
-<option value="scroll">Scroll</option>
-
-<option value="gnosis">Gnosis</option>
+<option value="arbitrum">Arbitrum</option>
+<option value="optimism">Optimism</option>
+<option value="avalanche">Avalanche</option>
 <option value="fantom">Fantom</option>
+<option value="base">Base</option>
 <option value="cronos">Cronos</option>
-<option value="celo">Celo</option>
-<option value="moonbeam">Moonbeam</option>
-
+<option value="gnosis">Gnosis</option>
 </select>
 
-<button onclick="scan()">Scan</button>
-<button onclick="downloadCSV()">CSV</button>
+<button onclick="checkWallets()">Check Balance</button>
 
+</div>
+
+<p id="status"></p>
 
 <table>
-
 <thead>
-
 <tr>
 <th>Address</th>
 <th>Network</th>
 <th>Balance</th>
 <th>USD Value</th>
-<th>TX Count</th>
-<th>Type</th>
 </tr>
-
 </thead>
-
 
 <tbody id="result"></tbody>
 
-
 </table>
 
+</div>
 
-<script src="evm.js"></script>
+<script src="script.js"></script>
 
 </body>
 </html>
