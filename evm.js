@@ -1,16 +1,23 @@
-const RPC={
+const RPC = {
 
 eth:"https://ethereum.publicnode.com",
-
 bsc:"https://bsc-dataseed.binance.org",
-
 polygon:"https://polygon-bor-rpc.publicnode.com",
-
 arb:"https://arbitrum-one.publicnode.com",
-
 base:"https://mainnet.base.org",
-
 op:"https://mainnet.optimism.io"
+
+};
+
+
+const COIN = {
+
+eth:"ethereum",
+bsc:"binancecoin",
+polygon:"matic-network",
+arb:"ethereum",
+base:"ethereum",
+op:"ethereum"
 
 };
 
@@ -20,7 +27,7 @@ let results=[];
 
 async function rpcCall(method,params,url){
 
-let r=await fetch(url,{
+let r = await fetch(url,{
 method:"POST",
 headers:{
 "Content-Type":"application/json"
@@ -39,8 +46,44 @@ return await r.json();
 
 
 
+async function getPrice(id){
+
+try{
+
+let r = await fetch(
+"https://api.coingecko.com/api/v3/simple/price?ids="+id+"&vs_currencies=usd"
+);
+
+let data = await r.json();
+
+return data[id].usd || 0;
+
+}catch{
+
+return 0;
+
+}
+
+}
+
+
+
+function formatBalance(value){
+
+if(value===0) return "0";
+
+return Number(value)
+.toFixed(12)
+.replace(/\.?0+$/,"");
+
+}
+
+
+
 function sleep(ms){
+
 return new Promise(resolve=>setTimeout(resolve,ms));
+
 }
 
 
@@ -50,6 +93,7 @@ async function scan(){
 results=[];
 
 let output=document.getElementById("result");
+
 output.innerHTML="";
 
 
@@ -61,19 +105,15 @@ let addresses=document
 .filter(x=>x);
 
 
+
 let selected=document
 .getElementById("network")
 .value;
 
 
-let networks;
-
-
-if(selected==="all"){
-networks=Object.keys(RPC);
-}else{
-networks=[selected];
-}
+let networks = selected==="all"
+? Object.keys(RPC)
+: [selected];
 
 
 
@@ -83,50 +123,72 @@ for(let chain of networks){
 
 try{
 
-let url=RPC[chain];
 
-
-let balance=await rpcCall(
+let balanceData = await rpcCall(
 "eth_getBalance",
 [addr,"latest"],
-url
+RPC[chain]
 );
 
 
-let tx=await rpcCall(
+
+let txData = await rpcCall(
 "eth_getTransactionCount",
 [addr,"latest"],
-url
+RPC[chain]
 );
 
 
-let code=await rpcCall(
+
+let codeData = await rpcCall(
 "eth_getCode",
 [addr,"latest"],
-url
+RPC[chain]
 );
+
+
+
+let balance =
+parseInt(balanceData.result,16) / 1e18;
+
+
+
+let price =
+await getPrice(COIN[chain]);
+
+
+
+let usd =
+balance * price;
+
 
 
 let row={
 
 address:addr,
 network:chain,
-balance:parseInt(balance.result,16)/1e18,
-tx:parseInt(tx.result,16),
-type:code.result==="0x"?"EOA":"Contract"
+balance:formatBalance(balance),
+usd:"$"+usd.toFixed(2),
+tx:parseInt(txData.result,16),
+type:codeData.result==="0x"
+?"EOA"
+:"Contract"
 
 };
+
 
 
 results.push(row);
 
 
-output.innerHTML+=`
+
+output.innerHTML += `
 
 <tr>
 <td>${row.address}</td>
 <td>${row.network}</td>
 <td>${row.balance}</td>
+<td>${row.usd}</td>
 <td>${row.tx}</td>
 <td>${row.type}</td>
 </tr>
@@ -134,28 +196,30 @@ output.innerHTML+=`
 `;
 
 
-await sleep(200);
+
+await sleep(500);
 
 
-}
+}catch(e){
 
-catch(e){
 
-output.innerHTML+=`
+output.innerHTML += `
 
 <tr>
 <td>${addr}</td>
 <td>${chain}</td>
-<td colspan="3">Error</td>
+<td colspan="4">Error</td>
 </tr>
 
 `;
 
 }
 
+
 }
 
 }
+
 
 }
 
@@ -163,12 +227,14 @@ output.innerHTML+=`
 
 function downloadCSV(){
 
-let csv="Address,Network,Balance,TX Count,Type\n";
+let csv =
+"Address,Network,Balance,USD Value,TX Count,Type\n";
 
 
 results.forEach(r=>{
 
-csv+=`${r.address},${r.network},${r.balance},${r.tx},${r.type}\n`;
+csv +=
+`${r.address},${r.network},${r.balance},${r.usd},${r.tx},${r.type}\n`;
 
 });
 
