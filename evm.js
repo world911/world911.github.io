@@ -1,144 +1,252 @@
-const networks = {
-    ethereum: {
-        name: "Ethereum",
-        rpc: "https://ethereum-rpc.publicnode.com",
-        symbol: "ETH",
-        price: "ethereum"
-    },
-    bsc: {
-        name: "BNB Chain",
-        rpc: "https://bsc-dataseed.binance.org",
-        symbol: "BNB",
-        price: "binancecoin"
-    },
-    polygon: {
-        name: "Polygon",
-        rpc: "https://polygon-rpc.com",
-        symbol: "POL",
-        price: "matic-network"
-    },
-    arbitrum: {
-        name: "Arbitrum",
-        rpc: "https://arb1.arbitrum.io/rpc",
-        symbol: "ETH",
-        price: "ethereum"
-    },
-    optimism: {
-        name: "Optimism",
-        rpc: "https://mainnet.optimism.io",
-        symbol: "ETH",
-        price: "ethereum"
-    },
-    avalanche: {
-        name: "Avalanche",
-        rpc: "https://api.avax.network/ext/bc/C/rpc",
-        symbol: "AVAX",
-        price: "avalanche-2"
-    },
-    fantom: {
-        name: "Fantom",
-        rpc: "https://rpc.ftm.tools",
-        symbol: "FTM",
-        price: "fantom"
-    },
-    base: {
-        name: "Base",
-        rpc: "https://mainnet.base.org",
-        symbol: "ETH",
-        price: "ethereum"
-    },
-    cronos: {
-        name: "Cronos",
-        rpc: "https://evm.cronos.org",
-        symbol: "CRO",
-        price: "crypto-com-chain"
-    },
-    gnosis: {
-        name: "Gnosis",
-        rpc: "https://rpc.gnosischain.com",
-        symbol: "xDAI",
-        price: "xdai"
-    }
+const RPC = {
+
+eth:"https://ethereum.publicnode.com",
+bsc:"https://bsc-dataseed.binance.org",
+polygon:"https://polygon-bor-rpc.publicnode.com",
+arb:"https://arbitrum-one.publicnode.com",
+base:"https://mainnet.base.org",
+op:"https://mainnet.optimism.io"
+
 };
 
 
-let prices = {};
+const COIN = {
+
+eth:"ethereum",
+bsc:"binancecoin",
+polygon:"matic-network",
+arb:"ethereum",
+base:"ethereum",
+op:"ethereum"
+
+};
 
 
-async function loadPrices(){
-
-    let ids = [...new Set(
-        Object.values(networks).map(x => x.price)
-    )].join(",");
+let results=[];
 
 
-    let res = await fetch(
-        "https://api.coingecko.com/api/v3/simple/price?ids="
-        + ids +
-        "&vs_currencies=usd"
-    );
+async function rpcCall(method,params,url){
 
-    let data = await res.json();
+let r = await fetch(url,{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({
+jsonrpc:"2.0",
+id:1,
+method:method,
+params:params
+})
+});
 
-    prices = {};
+return await r.json();
 
-    for(let id in data){
-        prices[id] = data[id].usd;
-    }
 }
 
 
 
-async function getBalance(rpc,address){
+async function getPrice(id){
 
-    let response = await fetch(rpc,{
-        method:"POST",
-        headers:{
-            "Content-Type":"application/json"
-        },
-        body:JSON.stringify({
-            jsonrpc:"2.0",
-            method:"eth_getBalance",
-            params:[address,"latest"],
-            id:1
-        })
-    });
+try{
 
+let r = await fetch(
+"https://api.coingecko.com/api/v3/simple/price?ids="+id+"&vs_currencies=usd"
+);
 
-    let data = await response.json();
+let data = await r.json();
 
-    return Number(BigInt(data.result || "0")) / 1e18;
+return data[id].usd || 0;
+
+}catch{
+
+return 0;
+
+}
+
 }
 
 
 
-function formatNumber(num){
+function formatBalance(value){
 
-    if(num === 0) return "0";
+if(value===0) return "0";
 
-    if(num < 0.000001)
-        return num.toFixed(10);
+return Number(value)
+.toFixed(12)
+.replace(/\.?0+$/,"");
 
-    return Number(num.toFixed(8)).toString();
 }
 
 
 
-async function checkWallets(){
+function sleep(ms){
 
-    let addresses =
-    document.getElementById("addresses")
-    .value
-    .split("\n")
-    .map(x=>x.trim())
-    .filter(x=>x);
+return new Promise(resolve=>setTimeout(resolve,ms));
+
+}
 
 
-    let selected =
-    document.getElementById("network").value;
+
+async function scan(){
+
+results=[];
+
+let output=document.getElementById("result");
+
+output.innerHTML="";
 
 
-    let networksToCheck =
-    selected === "all"
-    ? Object.keys(networks)
-    : [
+let addresses=document
+.getElementById("addresses")
+.value
+.split("\n")
+.map(x=>x.trim())
+.filter(x=>x);
+
+
+
+let selected=document
+.getElementById("network")
+.value;
+
+
+let networks = selected==="all"
+? Object.keys(RPC)
+: [selected];
+
+
+
+for(let addr of addresses){
+
+for(let chain of networks){
+
+try{
+
+
+let balanceData = await rpcCall(
+"eth_getBalance",
+[addr,"latest"],
+RPC[chain]
+);
+
+
+
+let txData = await rpcCall(
+"eth_getTransactionCount",
+[addr,"latest"],
+RPC[chain]
+);
+
+
+
+let codeData = await rpcCall(
+"eth_getCode",
+[addr,"latest"],
+RPC[chain]
+);
+
+
+
+let balance =
+parseInt(balanceData.result,16) / 1e18;
+
+
+
+let price =
+await getPrice(COIN[chain]);
+
+
+
+let usd =
+balance * price;
+
+
+
+let row={
+
+address:addr,
+network:chain,
+balance:formatBalance(balance),
+usd:"$"+usd.toFixed(2),
+tx:parseInt(txData.result,16),
+type:codeData.result==="0x"
+?"EOA"
+:"Contract"
+
+};
+
+
+
+results.push(row);
+
+
+
+output.innerHTML += `
+
+<tr>
+<td>${row.address}</td>
+<td>${row.network}</td>
+<td>${row.balance}</td>
+<td>${row.usd}</td>
+<td>${row.tx}</td>
+<td>${row.type}</td>
+</tr>
+
+`;
+
+
+
+await sleep(500);
+
+
+}catch(e){
+
+
+output.innerHTML += `
+
+<tr>
+<td>${addr}</td>
+<td>${chain}</td>
+<td colspan="4">Error</td>
+</tr>
+
+`;
+
+}
+
+
+}
+
+}
+
+
+}
+
+
+
+function downloadCSV(){
+
+let csv =
+"Address,Network,Balance,USD Value,TX Count,Type\n";
+
+
+results.forEach(r=>{
+
+csv +=
+`${r.address},${r.network},${r.balance},${r.usd},${r.tx},${r.type}\n`;
+
+});
+
+
+let blob=new Blob([csv]);
+
+let a=document.createElement("a");
+
+a.href=URL.createObjectURL(blob);
+
+a.download="evm-wallets.csv";
+
+a.click();
+
+}
