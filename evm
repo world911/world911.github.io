@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>EVM Bulk Wallet Checker</title>
+<link rel="stylesheet" href="evm-style.css">
+</head>
+
+<body>
+
+<h1>EVM Bulk Wallet Checker</h1>
+
+<textarea id="addresses" placeholder="Paste addresses one per line"></textarea>
+
+<br>
+
+<select id="network">
+<option value="all">All Networks</option>
+<option value="eth">Ethereum</option>
+<option value="bsc">BNB Chain</option>
+<option value="polygon">Polygon</option>
+<option value="arb">Arbitrum</option>
+<option value="base">Base</option>
+<option value="op">Optimism</option>
+</select>
+
+<button onclick="scan()">Scan</button>
+<button onclick="downloadCSV()">CSV</button>
+
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Network</th>
+<th>Balance</th>
+<th>TX Count</th>
+<th>Type</th>
+</tr>
+</thead>
+
+<tbody id="result"></tbody>
+</table>
+
+<script src="evm.js"></script>
+
+</body>
+</html>
