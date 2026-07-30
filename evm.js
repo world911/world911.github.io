@@ -1,100 +1,10 @@
-const RPC = {
-
-eth:"https://ethereum.publicnode.com",
-bsc:"https://bsc-dataseed.binance.org",
-polygon:"https://polygon-bor-rpc.publicnode.com",
-arb:"https://arbitrum-one.publicnode.com",
-base:"https://mainnet.base.org",
-op:"https://mainnet.optimism.io"
-
-};
-
-
-const COIN = {
-
-eth:"ethereum",
-bsc:"binancecoin",
-polygon:"matic-network",
-arb:"ethereum",
-base:"ethereum",
-op:"ethereum"
-
-};
-
-
-let results=[];
-
-
-async function rpcCall(method,params,url){
-
-let r = await fetch(url,{
-method:"POST",
-headers:{
-"Content-Type":"application/json"
-},
-body:JSON.stringify({
-jsonrpc:"2.0",
-id:1,
-method:method,
-params:params
-})
-});
-
-return await r.json();
-
-}
-
-
-
-async function getPrice(id){
-
-try{
-
-let r = await fetch(
-"https://api.coingecko.com/api/v3/simple/price?ids="+id+"&vs_currencies=usd"
-);
-
-let data = await r.json();
-
-return data[id].usd || 0;
-
-}catch{
-
-return 0;
-
-}
-
-}
-
-
-
-function formatBalance(value){
-
-if(value===0) return "0";
-
-return Number(value)
-.toFixed(12)
-.replace(/\.?0+$/,"");
-
-}
-
-
-
-function sleep(ms){
-
-return new Promise(resolve=>setTimeout(resolve,ms));
-
-}
-
-
-
 async function scan(){
 
 results=[];
 
 let output=document.getElementById("result");
 
-output.innerHTML="";
+output.innerHTML="<tr><td colspan='6'>Scanning wallets...</td></tr>";
 
 
 let addresses=document
@@ -103,7 +13,6 @@ let addresses=document
 .split("\n")
 .map(x=>x.trim())
 .filter(x=>x);
-
 
 
 let selected=document
@@ -131,13 +40,11 @@ RPC[chain]
 );
 
 
-
 let txData = await rpcCall(
 "eth_getTransactionCount",
 [addr,"latest"],
 RPC[chain]
 );
-
 
 
 let codeData = await rpcCall(
@@ -152,10 +59,8 @@ let balance =
 parseInt(balanceData.result,16) / 1e18;
 
 
-
 let price =
 await getPrice(COIN[chain]);
-
 
 
 let usd =
@@ -182,6 +87,12 @@ results.push(row);
 
 
 
+if(output.innerHTML.includes("Scanning wallets...")){
+    output.innerHTML="";
+}
+
+
+
 output.innerHTML += `
 
 <tr>
@@ -200,7 +111,13 @@ output.innerHTML += `
 await sleep(500);
 
 
+
 }catch(e){
+
+
+if(output.innerHTML.includes("Scanning wallets...")){
+    output.innerHTML="";
+}
 
 
 output.innerHTML += `
@@ -220,33 +137,5 @@ output.innerHTML += `
 
 }
 
-
-}
-
-
-
-function downloadCSV(){
-
-let csv =
-"Address,Network,Balance,USD Value,TX Count,Type\n";
-
-
-results.forEach(r=>{
-
-csv +=
-`${r.address},${r.network},${r.balance},${r.usd},${r.tx},${r.type}\n`;
-
-});
-
-
-let blob=new Blob([csv]);
-
-let a=document.createElement("a");
-
-a.href=URL.createObjectURL(blob);
-
-a.download="evm-wallets.csv";
-
-a.click();
 
 }
