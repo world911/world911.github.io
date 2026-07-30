@@ -2,39 +2,30 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>EVM Wallet Checker</title>
-<link rel="stylesheet" href="style.css">
+<title>EVM Bulk Wallet Checker</title>
+<link rel="stylesheet" href="evm-style.css">
 </head>
 
 <body>
 
-<div class="container">
+<h1>EVM Bulk Wallet Checker</h1>
 
-<h2>EVM Wallet Checker</h2>
+<textarea id="addresses" placeholder="Paste addresses one per line"></textarea>
 
-<textarea id="addresses" rows="8" placeholder="Paste wallet addresses (one per line)"></textarea>
-<div class="controls">
+<br>
 
 <select id="network">
 <option value="all">All Networks</option>
-<option value="ethereum">Ethereum</option>
+<option value="eth">Ethereum</option>
 <option value="bsc">BNB Chain</option>
 <option value="polygon">Polygon</option>
-<option value="arbitrum">Arbitrum</option>
-<option value="optimism">Optimism</option>
-<option value="avalanche">Avalanche</option>
-<option value="fantom">Fantom</option>
+<option value="arb">Arbitrum</option>
 <option value="base">Base</option>
-<option value="cronos">Cronos</option>
-<option value="gnosis">Gnosis</option>
+<option value="op">Optimism</option>
 </select>
 
-<button onclick="checkWallets()">Check Balance</button>
-
-</div>
-
-<p id="status"></p>
+<button onclick="scan()">Check Balance</button>
+<button onclick="downloadCSV()">CSV</button>
 
 <table>
 <thead>
@@ -43,16 +34,15 @@
 <th>Network</th>
 <th>Balance</th>
 <th>USD Value</th>
+<th>TX Count</th>
+<th>Type</th>
 </tr>
 </thead>
 
 <tbody id="result"></tbody>
-
 </table>
 
-</div>
-
-<script src="script.js"></script>
+<script src="evm.js"></script>
 
 </body>
 </html>
