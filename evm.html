@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>EVM Wallet Checker</title>
+<link rel="stylesheet" href="evm-style.css">
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>EVM Wallet Checker</h1>
+
+<p class="subtitle">
+Check balances, USD value, TX count across multiple EVM networks
+</p>
+
+
+<textarea id="addresses" placeholder="Paste wallet addresses (one per line)"></textarea>
+
+
+<div class="controls">
+
+<select id="network">
+
+<option value="all">All Networks</option>
+
+<option value="eth">Ethereum</option>
+<option value="bsc">BNB Chain</option>
+<option value="polygon">Polygon</option>
+<option value="arb">Arbitrum</option>
+<option value="base">Base</option>
+<option value="op">Optimism</option>
+
+<option value="avax">Avalanche</option>
+<option value="linea">Linea</option>
+<option value="zksync">zkSync Era</option>
+<option value="scroll">Scroll</option>
+<option value="mantle">Mantle</option>
+<option value="blast">Blast</option>
+
+<option value="gnosis">Gnosis</option>
+<option value="fantom">Fantom</option>
+<option value="cronos">Cronos</option>
+<option value="celo">Celo</option>
+<option value="moonbeam">Moonbeam</option>
+<option value="metis">Metis</option>
+
+<option value="kava">Kava</option>
+<option value="harmony">Harmony</option>
+<option value="okc">OKC</option>
+<option value="aurora">Aurora</option>
+<option value="moonriver">Moonriver</option>
+<option value="core">Core DAO</option>
+<option value="taiko">Taiko</option>
+
+</select>
+
+
+<button class="scan-btn" onclick="scan()">
+🔍 Scan Wallets
+</button>
+
+</div>
+
+
+
+<div class="table-box">
+
+<table>
+
+<thead>
+<tr>
+<th>Address</th>
+<th>Network</th>
+<th>Balance</th>
+<th>USD</th>
+<th>TX</th>
+<th>Type</th>
+</tr>
+</thead>
+
+
+<tbody id="result">
+
+<tr>
+<td colspan="6">
+Ready to scan
+</td>
+</tr>
+
+</tbody>
+
+</table>
+
+</div>
+
+
+</div>
+
+
+<script src="evm.js"></script>
+
+</body>
+</html>
