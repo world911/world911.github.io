@@ -1,0 +1,945 @@
+<!-- NumberBox updated build: local cache + Firebase workflow preserved -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NumberBox</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#090d0b;
+    --card:rgba(18, 26, 22, 0.82);
+    --line:rgba(255, 255, 255, 0.08);
+    --text:#eef4f1;
+    --muted:#859a8f;
+    --emerald:#10b981;
+    --emerald-dark:#059669;
+    --red:#ef4444;
+    --yellow:#f59e0b;
+    --green:#10b981;
+    --cyan:#2dd4bf;
+    --accent-grad:linear-gradient(135deg, #059669 0%, #10b981 50%, #34d399 100%);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;min-height:100vh;
+    background:
+      radial-gradient(circle at 50% 10%, rgba(16,185,129,0.12), transparent 50%),
+      radial-gradient(circle at 10% 90%, rgba(45,212,191,0.08), transparent 40%),
+      var(--bg);
+    color:var(--text);font-family:'Inter',sans-serif;
+    padding:28px 16px 60px;
+  }
+  .wrap{width:100%;max-width:680px;margin:0 auto;}
+  .brand{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;}
+  .brand-left{display:flex;align-items:center;gap:10px;}
+  .dot-row{display:flex;gap:5px;}
+  .dot{width:9px;height:9px;border-radius:50%;}
+  .dot.b{background:#2dd4bf;}
+  .dot.r{background:var(--red);}
+  .dot.y{background:var(--yellow);}
+  .dot.g{background:var(--emerald);}
+  .brand span{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:14px;color:var(--muted);letter-spacing:0.02em;}
+
+  h1{font-family:'Space Grotesk',sans-serif;font-size:clamp(24px,6vw,30px);font-weight:700;margin:0 0 18px;}
+
+  .search-box{
+    display:flex;align-items:center;gap:10px;
+    background:var(--card);backdrop-filter:blur(12px);border:1px solid var(--line);border-radius:12px;
+    padding:12px 16px;margin-bottom:14px;
+  }
+  .search-box svg{flex-shrink:0;opacity:.6;}
+  .search-box input{
+    flex:1;background:none;border:none;outline:none;color:var(--text);
+    font-family:'Inter',sans-serif;font-size:14.5px;
+  }
+  .search-box input::placeholder{color:#52665c;}
+
+  .new-folder-btn{
+    width:100%;padding:13px;border:2px dashed var(--line);border-radius:12px;
+    background:none;color:var(--muted);font-family:'Space Grotesk',sans-serif;
+    font-weight:600;font-size:14.5px;cursor:pointer;margin-bottom:16px;
+    transition:all .15s ease;
+  }
+  .new-folder-btn:hover{border-color:var(--emerald);color:var(--text);}
+
+  .create-form{
+    display:flex;gap:8px;margin-bottom:16px;
+  }
+  .create-form input{
+    flex:1;background:#0d1411;border:1px solid var(--line);color:var(--text);
+    font-family:'Space Grotesk',sans-serif;font-size:14.5px;padding:12px 14px;border-radius:10px;outline:none;
+  }
+  .create-form input:focus{border-color:var(--emerald);}
+  .create-form button{
+    background:var(--accent-grad);color:#06120e;border:none;
+    font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:14px;
+    padding:0 18px;border-radius:10px;cursor:pointer;
+  }
+
+  .import-toggle{
+    width:100%;padding:13px;border:1px solid var(--line);border-radius:12px;
+    background:var(--card);backdrop-filter:blur(12px);color:var(--text);font-family:'Space Grotesk',sans-serif;
+    font-weight:600;font-size:14.5px;cursor:pointer;margin-bottom:12px;
+    display:flex;align-items:center;justify-content:space-between;
+  }
+  .import-toggle:hover{border-color:var(--emerald);}
+  .import-toggle .arrow{color:var(--muted);font-size:12px;}
+  .import-box{
+    background:var(--card);backdrop-filter:blur(12px);border:1px solid var(--line);border-radius:14px;
+    padding:16px;margin-bottom:16px;
+  }
+  .import-box p.hint{font-size:12.5px;color:var(--muted);margin:0 0 10px;line-height:1.5;}
+  .import-box textarea{
+    width:100%;min-height:130px;background:#0d1411;border:1px solid var(--line);color:var(--text);
+    font-family:'Space Grotesk',sans-serif;font-size:13.5px;padding:12px 14px;border-radius:10px;outline:none;
+    resize:vertical;
+  }
+  .import-box textarea::placeholder{color:#52665c;font-family:'Inter',sans-serif;font-size:13px;}
+  .import-box textarea:focus{border-color:var(--emerald);}
+  .import-box button.extract-btn{
+    width:100%;margin-top:10px;padding:12px;border:none;border-radius:10px;
+    background:var(--accent-grad);color:#06120e;
+    font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:14.5px;cursor:pointer;
+  }
+  .import-note{font-size:12.5px;color:var(--muted);margin-top:10px;line-height:1.5;}
+
+  .folder-list{display:flex;flex-direction:column;gap:10px;}
+  .folder-card{
+    display:flex;align-items:center;justify-content:space-between;gap:10px;
+    background:var(--card);backdrop-filter:blur(12px);border:1px solid var(--line);border-radius:14px;
+    padding:16px 18px;cursor:pointer;transition:all .15s ease;
+  }
+  .folder-card:hover{border-color:var(--emerald);background:rgba(22,32,27,0.9);}
+  .folder-main{display:flex;align-items:center;gap:12px;min-width:0;}
+  .folder-dot{
+    width:9px;height:9px;border-radius:50%;flex-shrink:0;
+    background:var(--emerald);box-shadow:0 0 8px rgba(16,185,129,0.5);
+  }
+  .folder-text{min-width:0;}
+  .folder-name{
+    font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:15px;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
+  .folder-sub{font-size:12.5px;color:var(--muted);margin-top:2px;}
+  .folder-right{display:flex;align-items:center;gap:8px;flex-shrink:0;}
+  .folder-count{
+    background:rgba(45,212,191,0.12);border:1px solid rgba(45,212,191,0.3);color:var(--cyan);
+    font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:13px;
+    min-width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    padding:0 4px;
+  }
+  .folder-count.new{
+    background:rgba(245,158,11,0.15);border-color:var(--yellow);color:var(--yellow);
+  }
+  .folder-chevron{color:var(--muted);font-size:16px;}
+  .folder-del{
+    background:none;border:none;color:#52665c;font-size:16px;cursor:pointer;
+    padding:4px 6px;border-radius:6px;
+  }
+  .folder-del:hover{color:var(--red);background:rgba(239,68,68,0.1);}
+
+  .empty{color:#52665c;font-size:13.5px;text-align:center;padding:30px 0;}
+
+  /* Folder detail view */
+  .back-row{display:flex;align-items:center;gap:12px;margin-bottom:16px;}
+  .back-btn{
+    background:var(--card);backdrop-filter:blur(12px);border:1px solid var(--line);color:var(--text);
+    width:38px;height:38px;border-radius:10px;cursor:pointer;font-size:16px;
+    display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  }
+  .back-btn:hover{border-color:var(--emerald);}
+  .folder-title{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:19px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+
+  .upload-row{display:flex;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap;}
+  .toolbtn{
+    background:rgba(24,34,29,0.8);border:1px solid var(--line);color:var(--muted);
+    font-family:'Inter',sans-serif;font-size:12.5px;font-weight:500;
+    padding:7px 11px;border-radius:8px;cursor:pointer;transition:all .15s ease;
+  }
+  .toolbtn:hover{color:var(--text);border-color:#344a3e;}
+
+  .cc-row{
+    display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+    margin-bottom:12px;padding:12px 14px;background:var(--card);backdrop-filter:blur(12px);border:1px solid var(--line);border-radius:10px;
+  }
+  .cc-label{font-size:12.5px;color:var(--muted);font-family:'Inter',sans-serif;margin-right:2px;}
+  .cc-btn{
+    background:#141f1a;border:1px solid var(--line);color:var(--text);
+    font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:600;
+    min-width:38px;padding:7px 10px;border-radius:8px;cursor:pointer;transition:all .15s ease;
+  }
+  .cc-btn:hover{border-color:var(--red);color:var(--red);}
+  .cc-btn.active{border-color:var(--emerald);color:var(--emerald);background:rgba(16,185,129,0.1);}
+
+  .auto-row{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+  .next-copy-btn{
+    flex:1;min-width:0;
+    background:var(--accent-grad);
+    color:#06120e;
+    font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:15.5px;
+    padding:15px 14px;border:none;border-radius:12px;cursor:pointer;
+    box-shadow:0 4px 14px rgba(16,185,129,0.25);
+    transition:transform .12s ease, box-shadow .12s ease;
+  }
+  .next-copy-btn:hover{transform:translateY(-1px);box-shadow:0 8px 22px rgba(16,185,129,0.4);}
+  .auto-pos{
+    flex-shrink:0;font-size:12px;color:var(--muted);
+    font-family:'Space Grotesk',sans-serif;font-weight:600;white-space:nowrap;
+  }
+  .restart-btn{
+    flex-shrink:0;background:none;border:1px solid var(--line);color:var(--muted);
+    font-family:'Inter',sans-serif;font-size:11.5px;padding:8px 10px;border-radius:8px;cursor:pointer;
+  }
+  .restart-btn:hover{color:var(--text);border-color:#344a3e;}
+
+  .folder-meta{
+    display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;
+    margin-bottom:10px;font-size:12.5px;color:var(--muted);
+  }
+  .folder-meta .count{color:var(--text);font-weight:600;font-family:'Space Grotesk',sans-serif;}
+  .toolgroup{display:flex;gap:8px;}
+
+  .results-wrap{display:flex;align-items:flex-start;gap:8px;}
+  .num-list{
+    flex:1;min-width:0;
+    max-height:310px;overflow-y:auto;
+    display:flex;flex-direction:column;gap:8px;
+    scroll-behavior: smooth;
+  }
+  .num-list::-webkit-scrollbar{width:6px;}
+  .num-list::-webkit-scrollbar-thumb{background:var(--line);border-radius:3px;}
+
+  .scroll-controls{flex-shrink:0;display:flex;flex-direction:column;gap:6px;position:sticky;top:0;}
+  .scroll-btn{
+    width:34px;height:34px;border-radius:8px;
+    background:#141f1a;border:1px solid var(--line);color:var(--muted);
+    font-size:13px;cursor:pointer;transition:all .15s ease;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .scroll-btn:hover{color:var(--text);border-color:var(--emerald);}
+
+  .num-row{
+    display:flex;align-items:center;justify-content:space-between;gap:12px;
+    background:var(--card);backdrop-filter:blur(12px);border:1px solid var(--line);border-radius:10px;
+    padding:11px 16px;cursor:pointer;user-select:none;transition:all .15s ease;
+  }
+  .num-row:hover{background:rgba(22,32,27,0.9);}
+  .num-idx{
+    flex-shrink:0;color:var(--muted);font-size:12px;font-family:'Space Grotesk',sans-serif;
+    min-width:24px;
+  }
+  .num-val{
+    flex:1;font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:14.5px;word-break:break-all;
+  }
+  .new-badge{
+    flex-shrink:0;background:var(--yellow);color:#1a1206;font-weight:800;font-size:10.5px;
+    letter-spacing:0.03em;padding:4px 10px;border-radius:14px;font-family:'Space Grotesk',sans-serif;
+  }
+  .copied-tag{flex-shrink:0;color:#52665c;font-size:12px;font-weight:600;font-family:'Inter',sans-serif;min-width:44px;text-align:right;}
+
+  .num-row.copied{background:rgba(16,185,129,0.18);border-color:var(--emerald);border-width:2px;}
+  .num-row.copied .copied-tag{color:var(--emerald);}
+
+  /* --- CLEAN MINIMAL LOGIN MODAL --- */
+  #loginModal{
+    position:fixed;top:0;left:0;width:100%;height:100%;
+    background:rgba(5,9,7,0.92);backdrop-filter:blur(16px);
+    display:flex;align-items:center;justify-content:center;z-index:9999;
+    padding:16px;
+  }
+  .login-card{
+    width:100%;max-width:420px;
+    background:linear-gradient(180deg, rgba(18,26,22,0.96) 0%, rgba(10,15,13,0.99) 100%);
+    border:1px solid rgba(16,185,129,0.25);
+    box-shadow:0 20px 40px rgba(0,0,0,0.6), 0 0 30px rgba(16,185,129,0.12);
+    border-radius:24px;padding:32px 24px;text-align:center;position:relative;
+  }
+  .login-logo-circle{
+    width:64px;height:64px;margin:0 auto 16px;border-radius:50%;
+    background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 0 20px rgba(16,185,129,0.2);
+  }
+  .login-logo-circle svg{width:28px;height:28px;color:var(--emerald);}
+  .login-title{font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:700;letter-spacing:0.05em;color:#fff;margin-bottom:4px;}
+  .login-subtitle{font-size:12.5px;color:var(--muted);margin-bottom:24px;}
+  
+  .input-group{text-align:left;margin-bottom:16px;}
+  .input-group label{display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;font-family:'Space Grotesk',sans-serif;letter-spacing:0.03em;}
+  .input-field-wrap{position:relative;display:flex;align-items:center;}
+  .input-group input{
+    width:100%;background:#090d0b;border:1px solid var(--line);border-radius:12px;
+    padding:12px 14px;color:var(--text);font-family:'Inter',sans-serif;font-size:14px;outline:none;
+    transition:border-color .2s;
+  }
+  .input-group input:focus{border-color:var(--emerald);box-shadow:0 0 0 3px rgba(16,185,129,0.15);}
+  .eye-btn{position:absolute;right:12px;background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px;}
+
+  .remember-row{display:flex;align-items:center;justify-content:space-between;margin:20px 0;font-size:12.5px;color:var(--muted);}
+  .checkbox-label{display:flex;align-items:center;gap:8px;cursor:pointer;}
+  .checkbox-label input{accent-color:var(--emerald);width:16px;height:16px;border-radius:4px;}
+  .device-badge{display:flex;align-items:center;gap:4px;font-size:11.5px;color:var(--yellow);}
+
+  .enter-dash-btn{
+    width:100%;padding:14px;border:none;border-radius:14px;
+    background:var(--accent-grad);color:#06120e;font-family:'Space Grotesk',sans-serif;
+    font-weight:700;font-size:15px;cursor:pointer;box-shadow:0 8px 20px rgba(16,185,129,0.3);
+    transition:transform .15s ease, box-shadow .15s ease;margin-bottom:20px;
+  }
+  .enter-dash-btn:hover{transform:translateY(-1px);box-shadow:0 12px 25px rgba(16,185,129,0.45);}
+  
+  .login-footer-info{font-size:11.5px;color:var(--muted);line-height:1.6;border-top:1px solid var(--line);padding-top:16px;}
+  .version-tag{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:11px;letter-spacing:0.1em;color:var(--emerald);margin-top:6px;}
+
+  footer{margin-top:26px;}
+  .stats-bar{
+    text-align:center;color:var(--muted);font-size:12.5px;
+    font-family:'Space Grotesk',sans-serif;font-weight:600;margin-bottom:12px;
+  }
+  .backup-row{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;}
+</style>
+</head>
+<body>
+
+<!-- MANDATORY LOGIN GATE MODAL -->
+<div id="loginModal">
+  <div class="login-card">
+    <div class="login-logo-circle">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+    </div>
+    <div class="login-title">NUMBERBOX</div>
+    <div class="login-subtitle">Personal Number Manager</div>
+    
+    <div class="input-group">
+      <label>Email / Username</label>
+      <div class="input-field-wrap">
+        <input type="text" id="loginEmail" placeholder="Enter your email">
+      </div>
+    </div>
+
+    <div class="input-group">
+      <label>Password</label>
+      <div class="input-field-wrap">
+        <input type="password" id="loginPassword" placeholder="••••••••">
+        <button type="button" class="eye-btn" id="togglePassEye" title="Show/Hide Password">👁</button>
+      </div>
+    </div>
+
+    <div class="remember-row">
+      <label class="checkbox-label">
+        <input type="checkbox" id="rememberMeCheck" checked> Remember me
+      </label>
+      <span class="device-badge">🔒 Cached locally</span>
+    </div>
+
+    <button class="enter-dash-btn" id="submitLoginBtn">ACCESS DASHBOARD</button>
+
+    <div class="login-footer-info">
+      <div>⚡ Cloud Sync Enabled</div>
+      <div class="version-tag">READY</div>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="brand">
+    <div class="brand-left">
+      <div class="dot-row"><div class="dot b"></div><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div></div>
+      <span id="userBanner">WORKSPACE</span>
+    </div>
+    <div>
+      <button class="toolbtn" id="refreshBtn">🔄 Refresh</button>
+      <button class="toolbtn" id="authBtn">🚪 Logout</button>
+    </div>
+  </div>
+
+  <!-- LIST VIEW -->
+  <div id="listView">
+    <h1>My Numbers</h1>
+
+    <div class="search-box">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" id="searchInput" placeholder="Search folders...">
+    </div>
+
+    <div id="adminImportBox">
+      <button class="import-toggle" id="showImportBtn">
+        <span>📋 Extract numbers from pasted text</span>
+        <span class="arrow" id="importArrow">▾</span>
+      </button>
+      <div class="import-box" id="importBox" style="display:none;">
+        <p class="hint">Paste raw text mixing range names and numbers. Folders will sync instantly.</p>
+        <textarea id="importInput" placeholder="Paste your text here..."></textarea>
+        <div class="upload-row">
+          <label for="importFileInput" class="toolbtn">Upload .txt file</label>
+          <input type="file" id="importFileInput" accept=".txt,text/plain" style="display:none;">
+          <span id="importFileNameLabel"></span>
+        </div>
+        <button class="extract-btn" id="extractBtn">Extract &amp; sort into folders</button>
+        <div class="import-note" id="importNote"></div>
+      </div>
+    </div>
+
+    <div id="adminCreateBox">
+      <button class="new-folder-btn" id="showCreateBtn">+ New folder</button>
+      <div class="create-form" id="createForm" style="display:none;">
+        <input type="text" id="newFolderName" placeholder="Folder name (e.g. Workspace LX 02Jul)" maxlength="60">
+        <button id="createFolderBtn">Create</button>
+      </div>
+    </div>
+
+    <div class="folder-list" id="folderList"></div>
+  </div>
+
+  <!-- FOLDER DETAIL VIEW -->
+  <div id="folderView" style="display:none;">
+    <div class="back-row">
+      <button class="back-btn" id="backBtn">←</button>
+      <div class="folder-title" id="folderTitle"></div>
+    </div>
+
+    <div class="cc-row" id="ccRow">
+      <span class="cc-label">Strip / add:</span>
+      <button class="cc-btn active" data-t="full">FULL</button>
+      <button class="cc-btn" data-t="plus">+</button>
+      <button class="cc-btn" data-t="strip2">-2</button>
+      <button class="cc-btn" data-t="strip3">-3</button>
+    </div>
+
+    <div class="auto-row" id="autoRow">
+      <button class="next-copy-btn" id="nextCopyBtn">Next ▸ Copy</button>
+      <span class="auto-pos" id="autoPos">—</span>
+      <button class="restart-btn" id="autoResetBtn">Restart</button>
+    </div>
+
+    <div class="folder-meta">
+      <span><span class="count" id="folderCount">0</span> numbers</span>
+      <div class="toolgroup">
+      </div>
+    </div>
+
+    <div class="results-wrap">
+      <div class="num-list" id="numList"></div>
+      <div class="scroll-controls" id="scrollControls">
+        <button class="scroll-btn" id="scrollUp" title="Scroll up">&#9650;</button>
+        <button class="scroll-btn" id="scrollDown" title="Scroll down">&#9660;</button>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="stats-bar" id="statsBar"></div>
+    <div class="backup-row">
+      <button class="toolbtn" id="exportAllBtn">Export backup (.json)</button>
+      <label for="importAllInput" class="toolbtn" id="importBackupLabel">Restore backup</label>
+      <input type="file" id="importAllInput" accept=".json,application/json" style="display:none;">
+    </div>
+  </footer>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
+  import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js";
+  import { getFirestore, collection, doc, setDoc, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyC3dJg5jsogXSqr78zXpwtGcJCgwadcPlY",
+    authDomain: "my-numbers-01.firebaseapp.com",
+    projectId: "my-numbers-01",
+    storageBucket: "my-numbers-01.firebasestorage.app",
+    messagingSenderId: "796452751373",
+    appId: "1:796452751373:web:938f5941f3de78acb62d44"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  let currentUser = null;
+  let folders = [];
+  let activeFolderId = null;
+  let activeTransform = 'full';
+  let lastCopied = null;
+  let autoIndex = 0;
+
+  const CRED_CACHE_KEY = 'secure_workspace_creds_v1';
+  
+  function getUserCacheKey() {
+    return currentUser ? `numberFolders_${currentUser.uid}` : 'numberFolders_guest';
+  }
+
+  function loadFromCache() {
+    try {
+      const raw = localStorage.getItem(getUserCacheKey());
+      if (raw) folders = JSON.parse(raw);
+      else folders = [];
+    } catch (err) { folders = []; }
+  }
+
+  function saveToCache(data) {
+    try { localStorage.setItem(getUserCacheKey(), JSON.stringify(data)); } catch (err) {}
+  }
+
+  function loadSavedCreds() {
+    try {
+      const saved = localStorage.getItem(CRED_CACHE_KEY);
+      if (saved) {
+        const data = JSON.parse(saved);
+        document.getElementById('loginEmail').value = data.email || '';
+        document.getElementById('loginPassword').value = data.password || '';
+        document.getElementById('rememberMeCheck').checked = true;
+      }
+    } catch(e){}
+  }
+
+  async function refreshFromFirebase() {
+    if (!currentUser) return;
+    const refreshBtn = document.getElementById('refreshBtn');
+    if (refreshBtn) refreshBtn.textContent = '⏳ Syncing...';
+
+    try {
+      const userFoldersRef = collection(db, "users", currentUser.uid, "folders");
+      const querySnapshot = await getDocs(userFoldersRef);
+      const freshFolders = [];
+      querySnapshot.forEach((docSnap) => {
+        freshFolders.push({ id: docSnap.id, ...docSnap.data() });
+      });
+
+      folders = freshFolders;
+      saveToCache(folders);
+      renderList();
+      if (activeFolderId) renderFolder();
+      if (refreshBtn) refreshBtn.textContent = '✅ Updated';
+    } catch (err) {
+      if (refreshBtn) refreshBtn.textContent = '❌ Failed';
+    }
+
+    setTimeout(() => { if (refreshBtn) refreshBtn.textContent = '🔄 Refresh'; }, 2000);
+  }
+
+  onAuthStateChanged(auth, async (user) => {
+    currentUser = user;
+    const loginModal = document.getElementById('loginModal');
+    
+    if (user) {
+      loginModal.style.display = 'none';
+      document.getElementById('userBanner').textContent = user.email.split('@')[0].toUpperCase();
+      loadFromCache();
+      renderList();
+      await refreshFromFirebase();
+    } else {
+      loginModal.style.display = 'flex';
+      loadSavedCreds();
+      folders = [];
+      renderList();
+    }
+  });
+
+  document.getElementById('authBtn').addEventListener('click', async () => {
+    await signOut(auth);
+  });
+
+  document.getElementById('togglePassEye').addEventListener('click', () => {
+    const passInput = document.getElementById('loginPassword');
+    passInput.type = passInput.type === 'password' ? 'text' : 'password';
+  });
+
+  document.getElementById('submitLoginBtn').addEventListener('click', async () => {
+    const email = document.getElementById('loginEmail').value.trim();
+    const password = document.getElementById('loginPassword').value.trim();
+    const remember = document.getElementById('rememberMeCheck').checked;
+
+    if (!email || !password) {
+      alert('Please enter your email and password.');
+      return;
+    }
+
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      
+      if (remember) {
+        localStorage.setItem(CRED_CACHE_KEY, JSON.stringify({ email, password }));
+      } else {
+        localStorage.removeItem(CRED_CACHE_KEY);
+      }
+    } catch (err) {
+      alert('Login failed: ' + err.message);
+    }
+  });
+
+  async function saveFolderToCloud(folder) {
+    if (!currentUser) return;
+    const index = folders.findIndex(f => f.id === folder.id);
+    if (index > -1) folders[index] = folder;
+    else folders.unshift(folder);
+    
+    saveToCache(folders);
+    renderList();
+
+    await setDoc(doc(db, "users", currentUser.uid, "folders", folder.id), folder);
+  }
+
+  async function deleteFolderFromCloud(folderId) {
+    if (!currentUser) return;
+    folders = folders.filter(f => f.id !== folderId);
+    saveToCache(folders);
+    renderList();
+
+    await deleteDoc(doc(db, "users", currentUser.uid, "folders", folderId));
+  }
+
+  function uid(){ return 'f' + Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+  function newCount(folder){ return folder.numbers ? folder.numbers.filter(n => n.isNew).length : 0; }
+
+  function transformValue(v, t){
+    if(t === 'plus') return v.startsWith('+') ? v : '+' + v;
+    if(t === 'strip2') return v.length > 2 ? v.slice(2) : v;
+    if(t === 'strip3') return v.length > 3 ? v.slice(3) : v;
+    return v;
+  }
+
+  function formatTimestamp(ts){
+    if(!ts) return 'No numbers yet';
+    const d = new Date(ts);
+    return `${d.toLocaleDateString(undefined, { day: '2-digit', month: 'short' })}, ${d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}`;
+  }
+
+  function renderList(){
+    const listEl = document.getElementById('folderList');
+    const query = document.getElementById('searchInput').value.trim().toLowerCase();
+    const filtered = folders
+      .filter(f => f.name.toLowerCase().includes(query))
+      .sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
+
+    updateStats();
+
+    if(folders.length === 0){
+      listEl.innerHTML = '<div class="empty">No folders found. Create one or sync data.</div>';
+      return;
+    }
+    if(filtered.length === 0){
+      listEl.innerHTML = '<div class="empty">No folders match search.</div>';
+      return;
+    }
+
+    listEl.innerHTML = '';
+    filtered.forEach(folder => {
+      const nNew = newCount(folder);
+      const subLabel = folder.updatedAt
+        ? `${folder.numbers.length ? 'Updated' : 'Created'} ${formatTimestamp(folder.updatedAt)}`
+        : 'Tap to view numbers';
+      const card = document.createElement('div');
+      card.className = 'folder-card';
+      card.innerHTML = `
+        <div class="folder-main">
+          <span class="folder-dot"></span>
+          <div class="folder-text">
+            <div class="folder-name"></div>
+            <div class="folder-sub"></div>
+          </div>
+        </div>
+        <div class="folder-right">
+          <span class="folder-count ${nNew > 0 ? 'new' : ''}">${folder.numbers ? folder.numbers.length : 0}</span>
+          <span class="folder-chevron">&rsaquo;</span>
+          <button class="folder-del" title="Delete folder">&#10005;</button>
+        </div>
+      `;
+      card.querySelector('.folder-name').textContent = folder.name;
+      card.querySelector('.folder-sub').textContent = subLabel;
+      
+      card.querySelector('.folder-del').addEventListener('click', (e) => {
+        e.stopPropagation();
+        if(confirm(`Delete folder "${folder.name}"?`)) deleteFolderFromCloud(folder.id);
+      });
+      card.addEventListener('click', () => openFolder(folder.id));
+      listEl.appendChild(card);
+    });
+  }
+
+  document.getElementById('searchInput').addEventListener('input', renderList);
+
+  document.getElementById('showCreateBtn').addEventListener('click', () => {
+    const form = document.getElementById('createForm');
+    form.style.display = form.style.display === 'none' ? 'flex' : 'none';
+    if(form.style.display === 'flex') document.getElementById('newFolderName').focus();
+  });
+
+  async function createFolder(){
+    const input = document.getElementById('newFolderName');
+    const name = input.value.trim();
+    if(!name) return;
+    const newFolder = { id: uid(), name, numbers: [], updatedAt: Date.now() };
+    await saveFolderToCloud(newFolder);
+    input.value = '';
+    document.getElementById('createForm').style.display = 'none';
+  }
+  document.getElementById('createFolderBtn').addEventListener('click', createFolder);
+
+  
+function updatePageTitle(){
+  const folder = getActiveFolder();
+  document.title = folder ? folder.name : 'NumberBox';
+}
+
+function openFolder(id){
+    activeFolderId = id;
+    updatePageTitle();
+    activeTransform = 'full';
+    lastCopied = null;
+    autoIndex = 0;
+    document.querySelectorAll('.cc-btn').forEach(b => b.classList.toggle('active', b.dataset.t === 'full'));
+    document.getElementById('listView').style.display = 'none';
+    document.getElementById('folderView').style.display = 'block';
+    renderFolder();
+  }
+
+  function getActiveFolder(){ return folders.find(f => f.id === activeFolderId); }
+
+  function updateAutoPos(){
+    const posEl = document.getElementById('autoPos');
+    const folder = getActiveFolder();
+    if(!posEl || !folder) return;
+    if(!folder.numbers || folder.numbers.length === 0){ posEl.textContent = '—'; return; }
+    const shown = Math.min(autoIndex + 1, folder.numbers.length);
+    posEl.textContent = `${shown} / ${folder.numbers.length}`;
+  }
+
+  function renderFolder(){
+    const folder = getActiveFolder();
+    if(!folder) return;
+    document.getElementById('folderTitle').textContent = folder.name;
+    document.getElementById('folderCount').textContent = (folder.numbers || []).length.toLocaleString();
+
+    const listEl = document.getElementById('numList');
+    listEl.innerHTML = '';
+    lastCopied = null;
+
+    if(!folder.numbers || folder.numbers.length === 0){
+      listEl.innerHTML = '<div class="empty">No numbers in folder.</div>';
+      updateAutoPos();
+      return;
+    }
+
+    folder.numbers.forEach((entry, i) => {
+      const displayVal = transformValue(entry.value, activeTransform);
+      const row = document.createElement('div');
+      row.className = 'num-row';
+
+      row.innerHTML = `
+        <span class="num-idx">${i + 1}</span>
+        <span class="num-val">${displayVal}</span>
+        ${entry.isNew ? '<span class="new-badge">NEW</span>' : ''}
+        <span class="copied-tag"></span>
+      `;
+
+      row.addEventListener('click', () => {
+        navigator.clipboard.writeText(displayVal);
+        if(lastCopied) lastCopied.classList.remove('copied');
+        row.classList.add('copied');
+        row.querySelector('.copied-tag').textContent = 'copied';
+        lastCopied = row;
+        autoIndex = i + 1;
+        updateAutoPos();
+      });
+
+      listEl.appendChild(row);
+    });
+
+    updateAutoPos();
+  }
+
+  document.getElementById('backBtn').addEventListener('click', () => {
+    activeFolderId = null;
+    document.title = 'NumberBox';
+    document.getElementById('folderView').style.display = 'none';
+    document.getElementById('listView').style.display = 'block';
+    renderList();
+  });
+
+  document.getElementById('nextCopyBtn').addEventListener('click', () => {
+    const folder = getActiveFolder();
+    if(!folder || !folder.numbers || folder.numbers.length === 0) return;
+    if(autoIndex >= folder.numbers.length) autoIndex = 0;
+    
+    const entry = folder.numbers[autoIndex];
+    const displayVal = transformValue(entry.value, activeTransform);
+    navigator.clipboard.writeText(displayVal);
+    
+    const rows = document.querySelectorAll('.num-row');
+    if(lastCopied) lastCopied.classList.remove('copied');
+    
+    const currentRow = rows[autoIndex];
+    if(currentRow){
+      currentRow.classList.add('copied');
+      currentRow.querySelector('.copied-tag').textContent = 'copied';
+      currentRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      lastCopied = currentRow;
+    }
+    
+    autoIndex++;
+    updateAutoPos();
+  });
+
+  document.getElementById('autoResetBtn').addEventListener('click', () => {
+    autoIndex = 0;
+    if(lastCopied) lastCopied.classList.remove('copied');
+    lastCopied = null;
+    updateAutoPos();
+  });
+
+  document.querySelectorAll('.cc-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      document.querySelectorAll('.cc-btn').forEach(b => b.classList.remove('active'));
+      e.target.classList.add('active');
+      activeTransform = e.target.dataset.t;
+      renderFolder();
+    });
+  });
+
+  document.getElementById('downloadBtn').addEventListener('click', () => {
+    const folder = getActiveFolder();
+    if(!folder || !folder.numbers) return;
+    const text = folder.numbers.map(n => transformValue(n.value, activeTransform)).join('\n');
+    const blob = new Blob([text], {type: 'text/plain'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `${folder.name.replace(/[^a-z0-9]/gi, '_')}.txt`;
+    a.click();
+  });
+
+  document.getElementById('scrollUp').addEventListener('click', () => {
+    document.getElementById('numList').scrollBy({ top: -100, behavior: 'smooth' });
+  });
+  document.getElementById('scrollDown').addEventListener('click', () => {
+    document.getElementById('numList').scrollBy({ top: 100, behavior: 'smooth' });
+  });
+
+  document.getElementById('exportAllBtn').addEventListener('click', () => {
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(folders, null, 2));
+    const dlAnchorElem = document.createElement('a');
+    dlAnchorElem.setAttribute("href", dataStr);
+    dlAnchorElem.setAttribute("download", `workspace_backup_${new Date().toISOString().slice(0,10)}.json`);
+    dlAnchorElem.click();
+  });
+
+  document.getElementById('importAllInput').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = async function(e) {
+      try {
+        const imported = JSON.parse(e.target.result);
+        if(Array.isArray(imported)){
+          if(confirm(`Restore ${imported.length} folders? This will upload them to your account.`)){
+            for (const folder of imported) {
+              await saveFolderToCloud(folder);
+            }
+            alert('Restore complete!');
+          }
+        }
+      } catch (err) { alert('Invalid backup file'); }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  });
+
+  document.getElementById('importFileInput').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if(!file) return;
+    document.getElementById('importFileNameLabel').textContent = file.name;
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      document.getElementById('importInput').value = evt.target.result;
+    };
+    reader.readAsText(file);
+  });
+
+  function stripKnownNoise(s){
+    return s.replace(/Lamix\s*SMS/gi, ' ')
+      .replace(/My\s*SMS\s*Numbers/gi, ' ')
+      .replace(/Range\s*Prefix\s*Number/gi, ' ')
+      .replace(/My\s*Payout/gi, ' ')
+      .replace(/Client\s*Payout/gi, ' ')
+      .replace(/\bLimits\b/gi, ' ')
+      .replace(/\|/g, ' ')
+      .replace(/\s{2,}/g, ' ').trim();
+  }
+
+  function extractRanges(text){
+    const anchorRe = /(\d{1,4})\s+(\d{6,15})\s+Weekly\$\s*([\d.]+)\s*SD\s*:\s*(\d+)\s*\|\s*SW\s*:\s*(\d+)/g;
+    const results = [];
+    let lastEnd = 0, m;
+    while((m = anchorRe.exec(text)) !== null){
+      const fullNumber = m[2];
+      const gapRaw = text.slice(lastEnd, m.index);
+      const rangeName = stripKnownNoise(gapRaw) || 'Unknown';
+      results.push({ rangeName, number: fullNumber });
+      lastEnd = anchorRe.lastIndex;
+    }
+    return results;
+  }
+
+  document.getElementById('showImportBtn').addEventListener('click', () => {
+    const box = document.getElementById('importBox');
+    const arrow = document.getElementById('importArrow');
+    const open = box.style.display === 'none';
+    box.style.display = open ? 'block' : 'none';
+    arrow.textContent = open ? '▴' : '▾';
+  });
+
+  document.getElementById('extractBtn').addEventListener('click', async () => {
+    const text = document.getElementById('importInput').value;
+    const found = extractRanges(text);
+    if(found.length === 0) return alert("No valid number patterns found.");
+
+    const grouped = new Map();
+    found.forEach(({ rangeName, number }) => {
+      if(!grouped.has(rangeName)) grouped.set(rangeName, []);
+      grouped.get(rangeName).push(number);
+    });
+
+    for(let [rangeName, numbers] of grouped){
+      let folder = folders.find(f => f.name.toLowerCase() === rangeName.toLowerCase());
+      if(!folder){
+        folder = { id: uid(), name: rangeName, numbers: [], updatedAt: Date.now() };
+      }
+      const existing = new Set(folder.numbers.map(n => n.value));
+      numbers.forEach(v => {
+        if(!existing.has(v)) folder.numbers.push({ value: v, isNew: true });
+      });
+      folder.updatedAt = Date.now();
+      await saveFolderToCloud(folder);
+    }
+    alert(`Imported ${found.length} numbers successfully!`);
+  });
+
+  function updateStats(){
+    const bar = document.getElementById('statsBar');
+    if(!bar) return;
+    const totalFolders = folders.length;
+    const totalNumbers = folders.reduce((sum, f) => sum + (f.numbers ? f.numbers.length : 0), 0);
+    bar.textContent = `${totalFolders} folder(s) · ${totalNumbers} number(s)`;
+  }
+
+  document.getElementById('refreshBtn').addEventListener('click', refreshFromFirebase);
+
+  function autoLoginCheck() {
+    try {
+      const saved = localStorage.getItem(CRED_CACHE_KEY);
+      if (saved) {
+        const data = JSON.parse(saved);
+        if (data.email && data.password) {
+          signInWithEmailAndPassword(auth, data.email, data.password).catch(() => {});
+        }
+      }
+    } catch(e){}
+  }
+
+  autoLoginCheck();
+</script>
+</body>
+</html>
