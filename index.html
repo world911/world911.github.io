@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Number Folders</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0f1115;
+    --card:#171a21;
+    --line:#262a34;
+    --text:#eef0f4;
+    --muted:#8b90a0;
+    --blue:#4285F4;
+    --red:#EA4335;
+    --yellow:#FBBC05;
+    --green:#34A853;
+    --amber:#f5a623;
+    --cyan:#38d9d9;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;min-height:100vh;
+    background:
+      radial-gradient(circle at 15% 0%, rgba(66,133,244,0.10), transparent 45%),
+      radial-gradient(circle at 85% 100%, rgba(52,168,83,0.08), transparent 45%),
+      var(--bg);
+    color:var(--text);font-family:'Inter',sans-serif;
+    padding:28px 16px 60px;
+  }
+  .wrap{width:100%;max-width:680px;margin:0 auto;}
+  .brand{display:flex;align-items:center;gap:10px;margin-bottom:20px;}
+  .dot-row{display:flex;gap:5px;}
+  .dot{width:9px;height:9px;border-radius:50%;}
+  .dot.b{background:var(--blue);}
+  .dot.r{background:var(--red);}
+  .dot.y{background:var(--yellow);}
+  .dot.g{background:var(--green);}
+  .brand span{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:14px;color:var(--muted);letter-spacing:0.02em;}
+
+  h1{font-family:'Space Grotesk',sans-serif;font-size:clamp(24px,6vw,30px);font-weight:700;margin:0 0 18px;}
+
+  .search-box{
+    display:flex;align-items:center;gap:10px;
+    background:var(--card);border:1px solid var(--line);border-radius:12px;
+    padding:12px 16px;margin-bottom:14px;
+  }
+  .search-box svg{flex-shrink:0;opacity:.6;}
+  .search-box input{
+    flex:1;background:none;border:none;outline:none;color:var(--text);
+    font-family:'Inter',sans-serif;font-size:14.5px;
+  }
+  .search-box input::placeholder{color:#565c6c;}
+
+  .new-folder-btn{
+    width:100%;padding:13px;border:2px dashed var(--line);border-radius:12px;
+    background:none;color:var(--muted);font-family:'Space Grotesk',sans-serif;
+    font-weight:600;font-size:14.5px;cursor:pointer;margin-bottom:16px;
+    transition:all .15s ease;
+  }
+  .new-folder-btn:hover{border-color:var(--blue);color:var(--text);}
+
+  .create-form{
+    display:flex;gap:8px;margin-bottom:16px;
+  }
+  .create-form input{
+    flex:1;background:#0f1115;border:1px solid var(--line);color:var(--text);
+    font-family:'Space Grotesk',sans-serif;font-size:14.5px;padding:12px 14px;border-radius:10px;outline:none;
+  }
+  .create-form input:focus{border-color:var(--blue);}
+  .create-form button{
+    background:linear-gradient(90deg,var(--blue),#357ae8);color:#fff;border:none;
+    font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:14px;
+    padding:0 18px;border-radius:10px;cursor:pointer;
+  }
+
+  .import-toggle{
+    width:100%;padding:13px;border:1px solid var(--line);border-radius:12px;
+    background:var(--card);color:var(--text);font-family:'Space Grotesk',sans-serif;
+    font-weight:600;font-size:14.5px;cursor:pointer;margin-bottom:12px;
+    display:flex;align-items:center;justify-content:space-between;
+  }
+  .import-toggle:hover{border-color:var(--blue);}
+  .import-toggle .arrow{color:var(--muted);font-size:12px;}
+  .import-box{
+    background:var(--card);border:1px solid var(--line);border-radius:14px;
+    padding:16px;margin-bottom:16px;
+  }
+  .import-box p.hint{font-size:12.5px;color:var(--muted);margin:0 0 10px;line-height:1.5;}
+  .import-box textarea{
+    width:100%;min-height:130px;background:#0f1115;border:1px solid var(--line);color:var(--text);
+    font-family:'Space Grotesk',sans-serif;font-size:13.5px;padding:12px 14px;border-radius:10px;outline:none;
+    resize:vertical;
+  }
+  .import-box textarea::placeholder{color:#565c6c;font-family:'Inter',sans-serif;font-size:13px;}
+  .import-box textarea:focus{border-color:var(--blue);}
+  .import-box button.extract-btn{
+    width:100%;margin-top:10px;padding:12px;border:none;border-radius:10px;
+    background:linear-gradient(90deg,var(--green),#2f9e4a);color:#0b1210;
+    font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:14.5px;cursor:pointer;
+  }
+  .import-note{font-size:12.5px;color:var(--muted);margin-top:10px;line-height:1.5;}
+
+  .folder-list{display:flex;flex-direction:column;gap:10px;}
+  .folder-card{
+    display:flex;align-items:center;justify-content:space-between;gap:10px;
+    background:var(--card);border:1px solid var(--line);border-radius:14px;
+    padding:16px 18px;cursor:pointer;transition:all .15s ease;
+  }
+  .folder-card:hover{border-color:var(--blue);background:#1a1e27;}
+  .folder-main{display:flex;align-items:center;gap:12px;min-width:0;}
+  .folder-dot{
+    width:9px;height:9px;border-radius:50%;flex-shrink:0;
+    background:var(--blue);box-shadow:0 0 8px rgba(66,133,244,0.6);
+  }
+  .folder-text{min-width:0;}
+  .folder-name{
+    font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:15px;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
+  .folder-sub{font-size:12.5px;color:var(--muted);margin-top:2px;}
+  .folder-right{display:flex;align-items:center;gap:8px;flex-shrink:0;}
+  .folder-count{
+    background:rgba(56,217,217,0.12);border:1px solid rgba(56,217,217,0.4);color:var(--cyan);
+    font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:13px;
+    min-width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    padding:0 4px;
+  }
+  .folder-count.new{
+    background:rgba(245,166,35,0.15);border-color:var(--amber);color:var(--amber);
+  }
+  .folder-chevron{color:var(--muted);font-size:16px;}
+  .folder-del{
+    background:none;border:none;color:#565c6c;font-size:16px;cursor:pointer;
+    padding:4px 6px;border-radius:6px;
+  }
+  .folder-del:hover{color:var(--red);background:rgba(234,67,53,0.1);}
+
+  .empty{color:#565c6c;font-size:13.5px;text-align:center;padding:30px 0;}
+
+  /* Folder detail view */
+  .back-row{display:flex;align-items:center;gap:12px;margin-bottom:16px;}
+  .back-btn{
+    background:var(--card);border:1px solid var(--line);color:var(--text);
+    width:38px;height:38px;border-radius:10px;cursor:pointer;font-size:16px;
+    display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  }
+  .back-btn:hover{border-color:var(--blue);}
+  .folder-title{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:19px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+
+  .add-box{
+    background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px;
+  }
+  .add-box textarea{
+    width:100%;min-height:90px;background:#0f1115;border:1px solid var(--line);color:var(--text);
+    font-family:'Space Grotesk',sans-serif;font-size:14px;padding:12px 14px;border-radius:10px;outline:none;
+    resize:vertical;
+  }
+  .add-box textarea::placeholder{color:#565c6c;font-family:'Inter',sans-serif;font-size:13.5px;}
+  .add-box textarea:focus{border-color:var(--blue);}
+
+  .upload-row{display:flex;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap;}
+  .toolbtn{
+    background:#1e222b;border:1px solid var(--line);color:var(--muted);
+    font-family:'Inter',sans-serif;font-size:12.5px;font-weight:500;
+    padding:7px 11px;border-radius:8px;cursor:pointer;transition:all .15s ease;
+  }
+  .toolbtn:hover{color:var(--text);border-color:#3a3f4c;}
+  #fileNameLabel{color:var(--muted);font-size:12.5px;}
+
+  .add-box button.add-btn{
+    width:100%;margin-top:10px;padding:12px;border:none;border-radius:10px;
+    background:linear-gradient(90deg,var(--blue),#357ae8);color:#fff;
+    font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:14.5px;cursor:pointer;
+  }
+  .add-note{font-size:12px;color:#565c6c;margin-top:8px;text-align:center;}
+
+  .cc-row{
+    display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+    margin-bottom:12px;padding:12px 14px;background:var(--card);border:1px solid var(--line);border-radius:10px;
+  }
+  .cc-label{font-size:12.5px;color:var(--muted);font-family:'Inter',sans-serif;margin-right:2px;}
+  .cc-btn{
+    background:#1e222b;border:1px solid var(--line);color:var(--text);
+    font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:600;
+    min-width:38px;padding:7px 10px;border-radius:8px;cursor:pointer;transition:all .15s ease;
+  }
+  .cc-btn:hover{border-color:var(--red);color:var(--red);}
+  .cc-btn.active{border-color:var(--blue);color:var(--blue);background:rgba(66,133,244,0.1);}
+
+  .auto-row{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+  .next-copy-btn{
+    flex:1;min-width:0;
+    background:linear-gradient(90deg,#22e06b,#16b85a);
+    color:#0b1210;
+    font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:15.5px;
+    padding:15px 14px;border:none;border-radius:12px;cursor:pointer;
+    box-shadow:0 4px 14px rgba(34,224,107,0.25);
+    transition:transform .12s ease, box-shadow .12s ease;
+  }
+  .next-copy-btn:hover{transform:translateY(-1px);box-shadow:0 8px 22px rgba(34,224,107,0.4);}
+  .next-copy-btn:active{transform:translateY(0);}
+  .auto-pos{
+    flex-shrink:0;font-size:12px;color:var(--muted);
+    font-family:'Space Grotesk',sans-serif;font-weight:600;white-space:nowrap;
+  }
+  .restart-btn{
+    flex-shrink:0;background:none;border:1px solid var(--line);color:var(--muted);
+    font-family:'Inter',sans-serif;font-size:11.5px;padding:8px 10px;border-radius:8px;cursor:pointer;
+  }
+  .restart-btn:hover{color:var(--text);border-color:#3a3f4c;}
+
+  .folder-meta{
+    display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;
+    margin-bottom:10px;font-size:12.5px;color:var(--muted);
+  }
+  .folder-meta .count{color:var(--text);font-weight:600;font-family:'Space Grotesk',sans-serif;}
+  .toolgroup{display:flex;gap:8px;}
+
+  .results-wrap{display:flex;align-items:flex-start;gap:8px;}
+  .num-list{
+    flex:1;min-width:0;
+    max-height:310px;overflow-y:auto;
+    display:flex;flex-direction:column;gap:8px;
+  }
+  .num-list::-webkit-scrollbar{width:6px;}
+  .num-list::-webkit-scrollbar-thumb{background:var(--line);border-radius:3px;}
+
+  .scroll-controls{flex-shrink:0;display:flex;flex-direction:column;gap:6px;position:sticky;top:0;}
+  .scroll-btn{
+    width:34px;height:34px;border-radius:8px;
+    background:#1e222b;border:1px solid var(--line);color:var(--muted);
+    font-size:13px;cursor:pointer;transition:all .15s ease;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .scroll-btn:hover{color:var(--text);border-color:var(--blue);}
+  .scroll-btn:active{transform:translateY(1px);}
+
+  .num-row{
+    display:flex;align-items:center;justify-content:space-between;gap:12px;
+    background:var(--card);border:1px solid var(--line);border-radius:10px;
+    padding:11px 16px;cursor:pointer;user-select:none;transition:all .15s ease;
+  }
+  .num-row:hover{background:#1a1e27;}
+  .num-idx{
+    flex-shrink:0;color:var(--muted);font-size:12px;font-family:'Space Grotesk',sans-serif;
+    min-width:24px;
+  }
+  .num-val{
+    flex:1;font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:14.5px;word-break:break-all;
+  }
+  .new-badge{
+    flex-shrink:0;background:var(--amber);color:#1a1206;font-weight:800;font-size:10.5px;
+    letter-spacing:0.03em;padding:4px 10px;border-radius:14px;font-family:'Space Grotesk',sans-serif;
+  }
+  .copied-tag{flex-shrink:0;color:#565c6c;font-size:12px;font-weight:600;font-family:'Inter',sans-serif;min-width:44px;text-align:right;}
+
+  .num-row.copied{background:rgba(52,168,83,0.18);border-color:#22e06b;border-width:2px;}
+  .num-row.copied .copied-tag{color:#22e06b;}
+  .num-row.used{background:rgba(245,158,11,0.16);border-color:#ffab1a;border-width:2px;}
+
+  footer{margin-top:26px;}
+  .stats-bar{
+    text-align:center;color:var(--muted);font-size:12.5px;
+    font-family:'Space Grotesk',sans-serif;font-weight:600;margin-bottom:12px;
+  }
+  .backup-row{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;}
+  .backup-row .toolbtn{font-size:12px;}
+
+  @media (max-width:700px){
+    .num-row{padding:10px 12px;}
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="brand">
+    <div class="dot-row"><div class="dot b"></div><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div></div>
+    <span>NUMBER FOLDERS</span>
+  </div>
+
+  <!-- LIST VIEW -->
+  <div id="listView">
+    <h1>My Numbers</h1>
+
+    <div class="search-box">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" id="searchInput" placeholder="Search folders...">
+    </div>
+
+    <button class="import-toggle" id="showImportBtn">
+      <span>📋 Extract numbers from pasted text</span>
+      <span class="arrow" id="importArrow">▾</span>
+    </button>
+    <div class="import-box" id="importBox" style="display:none;">
+      <p class="hint">Paste raw text that mixes range names and numbers (like copying straight from a numbers panel). Each "&lt;Name&gt; LX &lt;date&gt; ... number ..." block gets grouped into its own folder automatically — matching folders get added to, new ones get created.</p>
+      <textarea id="importInput" placeholder="Paste your text here — e.g. Tanzania LX 28Apr 255 255650879815 Weekly$ 0.025 ..."></textarea>
+      <div class="upload-row">
+        <label for="importFileInput" class="toolbtn">Upload .txt file</label>
+        <input type="file" id="importFileInput" accept=".txt,text/plain" style="display:none;">
+        <span id="importFileNameLabel"></span>
+      </div>
+      <button class="extract-btn" id="extractBtn">Extract &amp; sort into folders</button>
+      <div class="import-note" id="importNote"></div>
+    </div>
+
+    <button class="new-folder-btn" id="showCreateBtn">+ New folder</button>
+    <div class="create-form" id="createForm" style="display:none;">
+      <input type="text" id="newFolderName" placeholder="Folder name (e.g. Algeria LX 02Jul)" maxlength="60">
+      <button id="createFolderBtn">Create</button>
+    </div>
+
+    <div class="folder-list" id="folderList"></div>
+  </div>
+
+  <!-- FOLDER DETAIL VIEW -->
+  <div id="folderView" style="display:none;">
+    <div class="back-row">
+      <button class="back-btn" id="backBtn">←</button>
+      <div class="folder-title" id="folderTitle"></div>
+    </div>
+
+    <div class="add-box">
+      <textarea id="addInput" placeholder="Paste numbers to add — one per line, or comma/space separated"></textarea>
+      <div class="upload-row">
+        <label for="fileInput" class="toolbtn">Upload .txt file</label>
+        <input type="file" id="fileInput" accept=".txt,text/plain" style="display:none;">
+        <span id="fileNameLabel"></span>
+      </div>
+      <button class="add-btn" id="addNumbersBtn">Add numbers</button>
+      <div class="add-note" id="addNote"></div>
+    </div>
+
+    <div class="cc-row" id="ccRow">
+      <span class="cc-label">Strip / add:</span>
+      <button class="cc-btn active" data-t="full">FULL</button>
+      <button class="cc-btn" data-t="plus">+</button>
+      <button class="cc-btn" data-t="strip2">-2</button>
+      <button class="cc-btn" data-t="strip3">-3</button>
+    </div>
+
+    <div class="auto-row" id="autoRow">
+      <button class="next-copy-btn" id="nextCopyBtn">Next ▸ Copy</button>
+      <span class="auto-pos" id="autoPos">—</span>
+      <button class="restart-btn" id="autoResetBtn">Restart</button>
+    </div>
+
+    <div class="folder-meta">
+      <span><span class="count" id="folderCount">0</span> numbers</span>
+      <div class="toolgroup">
+        <button class="toolbtn" id="downloadBtn">Download .txt</button>
+      </div>
+    </div>
+
+    <div class="results-wrap">
+      <div class="num-list" id="numList"></div>
+      <div class="scroll-controls" id="scrollControls">
+        <button class="scroll-btn" id="scrollUp" title="Scroll up">&#9650;</button>
+        <button class="scroll-btn" id="scrollDown" title="Scroll down">&#9660;</button>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="stats-bar" id="statsBar"></div>
+    <div class="backup-row">
+      <button class="toolbtn" id="exportAllBtn">Export backup (.json)</button>
+      <label for="importAllInput" class="toolbtn">Restore backup</label>
+      <input type="file" id="importAllInput" accept=".json,application/json" style="display:none;">
+    </div>
+  </footer>
+</div>
+
+<script>
+const STORAGE_KEY = 'numberFolders_v1';
+let folders = [];      // [{ id, name, numbers: [{ value, isNew }] }]
+let activeFolderId = null;
+let activeTransform = 'full'; // 'full' | 'plus' | 'strip2' | 'strip3'
+let lastCopied = null;        // row element currently marked 'copied'
+let autoIndex = 0;            // Next ▸ Copy position
+
+function loadFolders(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(raw){
+      const parsed = JSON.parse(raw);
+      if(Array.isArray(parsed)) folders = parsed;
+    }
+  }catch(err){ folders = []; }
+
+  // Migrate folders saved before timestamps existed
+  let migrated = false;
+  folders.forEach(f => {
+    if(!f.updatedAt){
+      f.updatedAt = Date.now();
+      migrated = true;
+    }
+  });
+  if(migrated) saveFolders();
+}
+
+function saveFolders(){
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(folders)); }
+  catch(err){ /* storage unavailable — ignore */ }
+}
+
+function uid(){ return 'f' + Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+
+function newCount(folder){
+  return folder.numbers.filter(n => n.isNew).length;
+}
+
+function transformValue(v, t){
+  if(t === 'plus') return v.startsWith('+') ? v : '+' + v;
+  if(t === 'strip2') return v.length > 2 ? v.slice(2) : v;
+  if(t === 'strip3') return v.length > 3 ? v.slice(3) : v;
+  return v;
+}
+
+/* ---------- LIST VIEW ---------- */
+
+function formatTimestamp(ts){
+  if(!ts) return 'No numbers yet';
+  const d = new Date(ts);
+  const datePart = d.toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' });
+  const timePart = d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+  return `${datePart}, ${timePart}`;
+}
+
+function renderList(){
+  const listEl = document.getElementById('folderList');
+  const query = document.getElementById('searchInput').value.trim().toLowerCase();
+  const filtered = folders
+    .filter(f => f.name.toLowerCase().includes(query))
+    .sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
+
+  updateStats();
+
+  if(folders.length === 0){
+    listEl.innerHTML = '<div class="empty">No folders yet — create one above.</div>';
+    return;
+  }
+  if(filtered.length === 0){
+    listEl.innerHTML = '<div class="empty">No folders match your search.</div>';
+    return;
+  }
+
+  listEl.innerHTML = '';
+  filtered.forEach(folder => {
+    const nNew = newCount(folder);
+    const subLabel = folder.updatedAt
+      ? `${folder.numbers.length ? 'Updated' : 'Created'} ${formatTimestamp(folder.updatedAt)}`
+      : 'Tap to view numbers';
+    const card = document.createElement('div');
+    card.className = 'folder-card';
+    card.innerHTML = `
+      <div class="folder-main">
+        <span class="folder-dot"></span>
+        <div class="folder-text">
+          <div class="folder-name"></div>
+          <div class="folder-sub"></div>
+        </div>
+      </div>
+      <div class="folder-right">
+        <span class="folder-count ${nNew > 0 ? 'new' : ''}">${folder.numbers.length}</span>
+        <span class="folder-chevron">&rsaquo;</span>
+        <button class="folder-del" title="Delete folder">&#10005;</button>
+      </div>
+    `;
+    card.querySelector('.folder-name').textContent = folder.name;
+    card.querySelector('.folder-sub').textContent = subLabel;
+    card.querySelector('.folder-del').addEventListener('click', (e) => {
+      e.stopPropagation();
+      if(confirm(`Delete folder "${folder.name}"? This can't be undone.`)){
+        folders = folders.filter(f => f.id !== folder.id);
+        saveFolders();
+        renderList();
+      }
+    });
+    card.addEventListener('click', () => openFolder(folder.id));
+    listEl.appendChild(card);
+  });
+}
+
+document.getElementById('searchInput').addEventListener('input', renderList);
+
+document.getElementById('showCreateBtn').addEventListener('click', () => {
+  const form = document.getElementById('createForm');
+  form.style.display = form.style.display === 'none' ? 'flex' : 'none';
+  if(form.style.display === 'flex') document.getElementById('newFolderName').focus();
+});
+
+function createFolder(){
+  const input = document.getElementById('newFolderName');
+  const name = input.value.trim();
+  if(!name) return;
+  folders.unshift({ id: uid(), name, numbers: [], updatedAt: Date.now() });
+  saveFolders();
+  input.value = '';
+  document.getElementById('createForm').style.display = 'none';
+  renderList();
+}
+document.getElementById('createFolderBtn').addEventListener('click', createFolder);
+document.getElementById('newFolderName').addEventListener('keydown', (e) => {
+  if(e.key === 'Enter') createFolder();
+});
+
+/* ---------- FOLDER DETAIL VIEW ---------- */
+
+function openFolder(id){
+  activeFolderId = id;
+  activeTransform = 'full';
+  lastCopied = null;
+  autoIndex = 0;
+  document.querySelectorAll('.cc-btn').forEach(b => b.classList.toggle('active', b.dataset.t === 'full'));
+  document.getElementById('listView').style.display = 'none';
+  document.getElementById('folderView').style.display = 'block';
+  document.getElementById('addInput').value = '';
+  document.getElementById('fileNameLabel').textContent = '';
+  document.getElementById('addNote').textContent = '';
+  renderFolder();
+}
+
+function getActiveFolder(){
+  return folders.find(f => f.id === activeFolderId);
+}
+
+function updateAutoPos(){
+  const posEl = document.getElementById('autoPos');
+  const folder = getActiveFolder();
+  if(!posEl || !folder) return;
+  if(folder.numbers.length === 0){ posEl.textContent = '—'; return; }
+  const shown = Math.min(autoIndex + 1, folder.numbers.length);
+  posEl.textContent = `${shown} / ${folder.numbers.length}`;
+}
+
+function renderFolder(){
+  const folder = getActiveFolder();
+  if(!folder) return;
+  document.getElementById('folderTitle').textContent = folder.name;
+  document.getElementById('folderCount').textContent = folder.numbers.length.toLocaleString();
+
+  const listEl = document.getElementById('numList');
+  listEl.innerHTML = '';
+  lastCopied = null;
+
+  if(folder.numbers.length === 0){
+    listEl.innerHTML = '<div class="empty">No numbers yet — add some above.</div>';
+    updateAutoPos();
+    return;
+  }
+
+  folder.numbers.forEach((entry, i) => {
+    const displayVal = transformValue(entry.value, activeTransform);
+
+    const row = document.createElement('div');
+    row.className = 'num-row';
+
+    const idx = document.createElement('span');
+    idx.className = 'num-idx';
+    idx.textContent = i + 1;
+
+    const val = document.createElement('span');
+    val.className = 'num-val';
+    val.textContent = displayVal;
+
+    row.appendChild(idx);
+    row.appendChild(val);
+
+    if(entry.isNew){
+      const badge = document.createElement('span');
+      badge.className = 'new-badge';
+      badge.textContent = 'NEW';
+      row.appendChild(badge);
+    }
+
+    const tag = document.createElement('span');
+    tag.className = 'copied-tag';
+    tag.textContent = '';
+    row.appendChild(tag);
+
+    row.addEventListener('click', () => {
+      copyRow(row, tag, displayVal);
+      autoIndex = i + 1;
+      updateAutoPos();
+
+      if(entry.isNew){
+        entry.isNew = false;
+        saveFolders();
+        const badgeEl = row.querySelector('.new-badge');
+        if(badgeEl) badgeEl.remove();
+        renderList();
+      }
+    });
+
+    listEl.appendChild(row);
+  });
+
+  updateAutoPos();
+}
+
+function fallbackCopy(text){
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.position = 'fixed';
+  ta.style.opacity = '0';
+  document.body.appendChild(ta);
+  ta.focus();
+  ta.select();
+  let ok = false;
+  try{ ok = document.execCommand('copy'); }catch(err){ ok = false; }
+  document.body.removeChild(ta);
+  return ok;
+}
+
+function copyText(text){
+  if(navigator.clipboard && window.isSecureContext){
+    return navigator.clipboard.writeText(text).catch(() => fallbackCopy(text));
+  }
+  fallbackCopy(text);
+  return Promise.resolve();
+}
+
+function markCopied(row, tag){
+  if(lastCopied && lastCopied.row !== row){
+    lastCopied.row.classList.remove('copied');
+    lastCopied.row.classList.add('used');
+    lastCopied.tag.textContent = '';
+  }
+  row.classList.remove('used');
+  row.classList.add('copied');
+  tag.textContent = 'copied';
+  lastCopied = { row, tag };
+}
+
+function copyRow(row, tag, text){
+  copyText(text).then(() => markCopied(row, tag));
+  markCopied(row, tag); // update UI immediately, clipboard resolves async
+}
+
+document.getElementById('backBtn').addEventListener('click', () => {
+  activeFolderId = null;
+  document.getElementById('folderView').style.display = 'none';
+  document.getElementById('listView').style.display = 'block';
+  renderList();
+});
+
+/* Add numbers (paste or file) — shared helper works on any folder object */
+function addValuesToFolder(folder, values){
+  const existing = new Set(folder.numbers.map(n => n.value));
+  let addedCount = 0;
+  values.forEach(value => {
+    if(!existing.has(value)){
+      folder.numbers.push({ value, isNew: true });
+      existing.add(value);
+      addedCount++;
+    }
+  });
+  if(addedCount > 0) folder.updatedAt = Date.now();
+  return { addedCount, skippedCount: values.length - addedCount };
+}
+
+function addNumbersFromText(raw){
+  const folder = getActiveFolder();
+  if(!folder) return;
+  const parsed = [...new Set(
+    raw.split(/[\n,;]+/).map(s => s.trim()).filter(s => s.length > 0)
+  )];
+
+  const { addedCount, skippedCount } = addValuesToFolder(folder, parsed);
+
+  saveFolders();
+  const note = document.getElementById('addNote');
+  note.textContent = parsed.length === 0
+    ? 'Nothing to add.'
+    : `Added ${addedCount} new number(s)` + (skippedCount > 0 ? `, skipped ${skippedCount} duplicate(s).` : '.');
+  renderFolder();
+  renderList();
+}
+
+document.getElementById('addNumbersBtn').addEventListener('click', () => {
+  const raw = document.getElementById('addInput').value;
+  addNumbersFromText(raw);
+  document.getElementById('addInput').value = '';
+});
+
+document.getElementById('fileInput').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = (evt) => {
+    document.getElementById('fileNameLabel').textContent = file.name;
+    addNumbersFromText(evt.target.result);
+  };
+  reader.onerror = () => {
+    document.getElementById('fileNameLabel').textContent = 'Could not read that file.';
+  };
+  reader.readAsText(file);
+});
+
+/* Country-code strip / add controls */
+document.querySelectorAll('.cc-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    activeTransform = btn.dataset.t;
+    document.querySelectorAll('.cc-btn').forEach(b => b.classList.toggle('active', b === btn));
+    lastCopied = null;
+    autoIndex = 0;
+    renderFolder();
+  });
+});
+
+/* Scroll buttons */
+function rowStep(){
+  const list = document.getElementById('numList');
+  const first = list.querySelector('.num-row');
+  if(!first) return 50;
+  const style = getComputedStyle(list);
+  const gap = parseFloat(style.rowGap || style.gap) || 8;
+  return first.offsetHeight + gap;
+}
+document.getElementById('scrollUp').addEventListener('click', () => {
+  document.getElementById('numList').scrollBy({ top: -rowStep(), behavior: 'smooth' });
+});
+document.getElementById('scrollDown').addEventListener('click', () => {
+  document.getElementById('numList').scrollBy({ top: rowStep(), behavior: 'smooth' });
+});
+
+/* Next ▸ Copy step-through */
+document.getElementById('nextCopyBtn').addEventListener('click', () => {
+  const folder = getActiveFolder();
+  if(!folder || folder.numbers.length === 0) return;
+  if(autoIndex >= folder.numbers.length) autoIndex = 0;
+
+  const listEl = document.getElementById('numList');
+  const row = listEl.children[autoIndex];
+  if(!row) return;
+  const tag = row.querySelector('.copied-tag');
+  const entry = folder.numbers[autoIndex];
+  const displayVal = transformValue(entry.value, activeTransform);
+
+  copyRow(row, tag, displayVal);
+  document.getElementById('numList').scrollBy({ top: rowStep(), behavior: 'smooth' });
+
+  if(entry.isNew){
+    entry.isNew = false;
+    saveFolders();
+    const badgeEl = row.querySelector('.new-badge');
+    if(badgeEl) badgeEl.remove();
+    renderList();
+  }
+
+  autoIndex++;
+  updateAutoPos();
+});
+
+document.getElementById('autoResetBtn').addEventListener('click', () => {
+  autoIndex = 0;
+  updateAutoPos();
+});
+
+/* Download current folder as .txt (respects active transform) */
+document.getElementById('downloadBtn').addEventListener('click', () => {
+  const folder = getActiveFolder();
+  if(!folder || folder.numbers.length === 0) return;
+  const lines = folder.numbers.map(n => transformValue(n.value, activeTransform));
+  const blob = new Blob([lines.join('\n')], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${folder.name.replace(/[^a-z0-9]+/gi, '_')}.txt`;
+  a.click();
+  URL.revokeObjectURL(url);
+});
+
+/* ---------- SMART IMPORT (extract range name + number from raw pasted text) ---------- */
+
+function extractRanges(text){
+  // Anchor on "LX <date><prefix digits><long number>" — the distinctive, stable part of each block.
+  const anchorRe = /LX\s+(\d{1,2}[A-Za-z]{3,9})\s+(\d{1,4})\s+(\d{6,15})/g;
+  const blacklist = new Set(['Range','Prefix','Number','Numbers','My','Payout','Client','Limits','SMS','Sms','Weekly','Lamix']);
+  const results = [];
+  let m;
+  while((m = anchorRe.exec(text)) !== null){
+    const dateCode = m[1];
+    const fullNumber = m[3];
+    const beforeText = text.slice(0, m.index).trimEnd();
+    const beforeWords = beforeText.split(/\s+/).filter(Boolean);
+
+    let nameWords = [];
+    for(let i = beforeWords.length - 1; i >= 0 && nameWords.length < 2; i--){
+      const w = beforeWords[i];
+      if(/^[A-Z][a-zA-Z]*$/.test(w) && !blacklist.has(w)){
+        nameWords.unshift(w);
+      }else{
+        break;
+      }
+    }
+    const country = nameWords.length ? nameWords.join(' ') : 'Unknown';
+    results.push({ rangeName: `${country} LX ${dateCode}`, number: fullNumber });
+  }
+  return results;
+}
+
+function runSmartImport(text){
+  const found = extractRanges(text);
+  const note = document.getElementById('importNote');
+  if(found.length === 0){
+    note.textContent = "Couldn't find any recognizable ranges in that text — check it matches the '<Name> LX <date> ... number ...' pattern.";
+    return;
+  }
+
+  const grouped = new Map(); // rangeName -> [numbers]
+  found.forEach(({ rangeName, number }) => {
+    if(!grouped.has(rangeName)) grouped.set(rangeName, []);
+    grouped.get(rangeName).push(number);
+  });
+
+  let foldersCreated = 0, foldersUpdated = 0, totalAdded = 0, totalSkipped = 0;
+
+  grouped.forEach((numbers, rangeName) => {
+    let folder = folders.find(f => f.name.toLowerCase() === rangeName.toLowerCase());
+    if(!folder){
+      folder = { id: uid(), name: rangeName, numbers: [] };
+      folders.unshift(folder);
+      foldersCreated++;
+    }else{
+      foldersUpdated++;
+    }
+    const { addedCount, skippedCount } = addValuesToFolder(folder, [...new Set(numbers)]);
+    totalAdded += addedCount;
+    totalSkipped += skippedCount;
+  });
+
+  saveFolders();
+  renderList();
+
+  note.textContent = `Sorted ${found.length} number(s) into ${grouped.size} range(s) — ` +
+    `${foldersCreated} folder(s) created, ${foldersUpdated} updated, ` +
+    `${totalAdded} number(s) added` + (totalSkipped > 0 ? `, ${totalSkipped} duplicate(s) skipped.` : '.');
+}
+
+document.getElementById('showImportBtn').addEventListener('click', () => {
+  const box = document.getElementById('importBox');
+  const arrow = document.getElementById('importArrow');
+  const open = box.style.display === 'none';
+  box.style.display = open ? 'block' : 'none';
+  arrow.textContent = open ? '▴' : '▾';
+});
+
+document.getElementById('extractBtn').addEventListener('click', () => {
+  const raw = document.getElementById('importInput').value;
+  runSmartImport(raw);
+});
+
+document.getElementById('importFileInput').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = (evt) => {
+    document.getElementById('importFileNameLabel').textContent = file.name;
+    document.getElementById('importInput').value = evt.target.result;
+    runSmartImport(evt.target.result);
+  };
+  reader.onerror = () => {
+    document.getElementById('importFileNameLabel').textContent = 'Could not read that file.';
+  };
+  reader.readAsText(file);
+});
+
+/* ---------- STATS + BACKUP/RESTORE ---------- */
+
+function updateStats(){
+  const bar = document.getElementById('statsBar');
+  if(!bar) return;
+  const totalFolders = folders.length;
+  const totalNumbers = folders.reduce((sum, f) => sum + f.numbers.length, 0);
+  const totalNew = folders.reduce((sum, f) => sum + newCount(f), 0);
+  bar.textContent = totalFolders === 0
+    ? 'No folders yet'
+    : `${totalFolders} folder(s) · ${totalNumbers} number(s)` + (totalNew > 0 ? ` · ${totalNew} new` : '');
+}
+
+document.getElementById('exportAllBtn').addEventListener('click', () => {
+  if(folders.length === 0){ alert('No folders to export yet.'); return; }
+  const blob = new Blob([JSON.stringify(folders, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  const stamp = new Date().toISOString().slice(0, 10);
+  a.download = `number-folders-backup-${stamp}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+});
+
+document.getElementById('importAllInput').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = (evt) => {
+    let incoming;
+    try{
+      incoming = JSON.parse(evt.target.result);
+    }catch(err){
+      alert('That file is not valid JSON.');
+      e.target.value = '';
+      return;
+    }
+    if(!Array.isArray(incoming)){
+      alert("That file doesn't look like a number-folders backup.");
+      e.target.value = '';
+      return;
+    }
+
+    let foldersCreated = 0, foldersUpdated = 0, totalAdded = 0;
+    incoming.forEach(inFolder => {
+      if(!inFolder || typeof inFolder.name !== 'string' || !Array.isArray(inFolder.numbers)) return;
+      const values = inFolder.numbers
+        .map(n => (n && typeof n.value === 'string') ? n.value : null)
+        .filter(Boolean);
+
+      let folder = folders.find(f => f.name.toLowerCase() === inFolder.name.toLowerCase());
+      if(!folder){
+        folder = { id: uid(), name: inFolder.name, numbers: [] };
+        folders.push(folder);
+        foldersCreated++;
+      }else{
+        foldersUpdated++;
+      }
+      const { addedCount } = addValuesToFolder(folder, [...new Set(values)]);
+      totalAdded += addedCount;
+    });
+
+    saveFolders();
+    renderList();
+    alert(`Restore complete — ${foldersCreated} folder(s) created, ${foldersUpdated} matched existing, ${totalAdded} number(s) added.`);
+    e.target.value = '';
+  };
+  reader.onerror = () => { alert('Could not read that file.'); e.target.value = ''; };
+  reader.readAsText(file);
+});
+
+/* ---------- INIT ---------- */
+loadFolders();
+renderList();
+</script>
+
+</body>
+</html>
