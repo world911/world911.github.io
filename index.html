@@ -245,7 +245,6 @@
             div.innerHTML = `
                 <div class="flex items-center gap-2 mb-0.5 px-1">
                     <span class="text-[11px] font-medium ${currentTheme === 'whatsapp' ? 'text-emerald-400' : 'text-blue-400'}">${escapeHtml(m.username)}</span>
-                    <button onclick="setReplyTo(${m.id}, '${escapeHtml(m.username)}', '${escapeHtml(m.content || '')}')" class="text-[10px] text-slate-400 hover:text-white transition" title="Reply">Reply</button>
                     <button onclick="adminDelete(${m.id})" class="text-[10px] text-rose-400 hover:text-rose-300 font-semibold opacity-50 hover:opacity-100 transition" title="Admin Delete">×</button>
                 </div>
                 <div class="${bubbleBg} px-3.5 py-2 rounded-2xl text-sm max-w-xs sm:max-w-md break-words shadow-md relative">
@@ -256,6 +255,11 @@
                         ${m.created_at ? new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
                     </div>
                 </div>
+                <div class="px-1 mt-0.5">
+                    <button onclick="setReplyTo(${m.id}, '${escapeHtml(m.username)}', '${escapeHtml(m.content || '')}')" class="text-[10px] text-slate-400 hover:text-white transition flex items-center gap-1 font-medium">
+                        <span>Reply</span>
+                    </button>
+                </div>
             `;
             box.appendChild(div);
         }
@@ -263,7 +267,7 @@
         async function adminDelete(id) {
             const code = prompt('Enter Password:');
             if (code !== 'chudlingpong') {
-                if (code !== null) alert('Incorrect password!');
+                if (code !== null) alert('Incorrect!');
                 return;
             }
 
