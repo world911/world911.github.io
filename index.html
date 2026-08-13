@@ -25,9 +25,11 @@
             </div>
         </div>
         <div class="flex items-center gap-2">
-            <!-- Theme Toggle Text/Icon Button -->
-            <button onclick="toggleTheme()" id="theme-btn" class="bg-[#3a3b3c] hover:bg-[#4e4f50] text-xs px-2.5 py-2 rounded-lg text-slate-200 transition flex items-center gap-1.5 font-medium" title="Switch Theme">
-                <span id="theme-icon">🟢</span> <span id="theme-text">WhatsApp</span>
+            <!-- Theme Toggle Universal Switch Icon Button -->
+            <button onclick="toggleTheme()" class="bg-[#3a3b3c] hover:bg-[#4e4f50] p-2 rounded-lg text-slate-200 transition flex items-center justify-center" title="Switch Theme">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                </svg>
             </button>
             <span id="username-display" class="text-xs text-slate-300 font-medium bg-[#3a3b3c] px-2.5 py-2 rounded-lg border border-[#4e4f50] truncate max-w-[80px]"></span>
             <!-- Edit Name Icon Button -->
@@ -41,6 +43,15 @@
 
     <!-- Messages Box -->
     <main id="chat-box" class="flex-1 overflow-y-auto p-4 space-y-3 flex flex-col"></main>
+
+    <!-- Reply Context Bar -->
+    <div id="reply-preview-container" class="px-4 hidden bg-[#242526] py-2 border-t border-[#393a3b] flex items-center justify-between transition-colors duration-300">
+        <div class="text-xs text-slate-300 truncate flex items-center gap-2">
+            <span class="font-semibold text-blue-400">Replying to <span id="reply-to-user"></span>:</span>
+            <span id="reply-to-text" class="italic text-slate-400 truncate max-w-xs"></span>
+        </div>
+        <button onclick="cancelReply()" class="text-rose-400 hover:text-rose-300 text-xs font-medium">Cancel</button>
+    </div>
 
     <!-- Media Preview Bar -->
     <div id="media-preview-container" class="px-4 hidden bg-[#242526] py-2 border-t border-[#393a3b] flex items-center justify-between transition-colors duration-300">
@@ -72,6 +83,8 @@
         const SUPABASE_URL = 'https://dtdcywegbilszwlbiyvh.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_8v0SCUFZ-LAxGb0VcY5MLg_xyLtRkfy';
         const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        let replyingToId = null;
 
         // UTC+6 Bangladesh Time & Date Clock (Single Line)
         function updateLiveClock() {
@@ -112,29 +125,26 @@
             const header = document.getElementById('app-header');
             const footer = document.getElementById('app-footer');
             const preview = document.getElementById('media-preview-container');
+            const replyPreview = document.getElementById('reply-preview-container');
             const headerIcon = document.getElementById('header-icon');
             const sendBtn = document.getElementById('send-btn');
-            const themeText = document.getElementById('theme-text');
-            const themeIcon = document.getElementById('theme-icon');
 
             if (currentTheme === 'whatsapp') {
                 body.className = "bg-[#0b141a] text-slate-100 h-screen flex flex-col justify-between transition-colors duration-300";
                 header.className = "bg-[#202c33] border-b border-[#222d34] px-4 py-3 flex justify-between items-center shadow-md transition-colors duration-300";
                 footer.className = "bg-[#202c33] border-t border-[#222d34] p-3 transition-colors duration-300";
                 preview.className = "px-4 hidden bg-[#202c33] py-2 border-t border-[#222d34] flex items-center justify-between transition-colors duration-300";
+                replyPreview.className = "px-4 hidden bg-[#202c33] py-2 border-t border-[#222d34] flex items-center justify-between transition-colors duration-300";
                 headerIcon.className = "w-10 h-10 rounded-full bg-emerald-600 flex items-center justify-center font-bold text-white shadow flex-shrink-0";
                 sendBtn.className = "bg-emerald-600 hover:bg-emerald-500 text-white px-5 py-2.5 rounded-lg text-sm font-medium transition shadow flex items-center justify-center";
-                themeText.textContent = "Messenger";
-                themeIcon.textContent = "💬";
             } else {
                 body.className = "bg-[#18191a] text-[#e4e6eb] h-screen flex flex-col justify-between transition-colors duration-300";
                 header.className = "bg-[#242526] border-b border-[#393a3b] px-4 py-3 flex justify-between items-center shadow-md transition-colors duration-300";
                 footer.className = "bg-[#242526] border-t border-[#393a3b] p-3 transition-colors duration-300";
                 preview.className = "px-4 hidden bg-[#242526] py-2 border-t border-[#393a3b] flex items-center justify-between transition-colors duration-300";
+                replyPreview.className = "px-4 hidden bg-[#242526] py-2 border-t border-[#393a3b] flex items-center justify-between transition-colors duration-300";
                 headerIcon.className = "w-10 h-10 rounded-full bg-[#0084ff] flex items-center justify-center font-bold text-white shadow flex-shrink-0";
                 sendBtn.className = "bg-[#0084ff] hover:bg-[#006dd6] text-white px-5 py-2.5 rounded-full text-sm font-medium transition shadow flex items-center justify-center";
-                themeText.textContent = "WhatsApp";
-                themeIcon.textContent = "🟢";
             }
         }
 
@@ -166,6 +176,19 @@
             document.getElementById('media-preview-container').classList.add('hidden');
         }
 
+        function setReplyTo(id, username, content) {
+            replyingToId = id;
+            document.getElementById('reply-to-user').textContent = username;
+            document.getElementById('reply-to-text').textContent = content || '[Media]';
+            document.getElementById('reply-preview-container').classList.remove('hidden');
+            document.getElementById('msg-input').focus();
+        }
+
+        function cancelReply() {
+            replyingToId = null;
+            document.getElementById('reply-preview-container').classList.add('hidden');
+        }
+
         async function loadMessages() {
             const { data, error } = await client
                 .from('messages')
@@ -177,6 +200,10 @@
 
             const box = document.getElementById('chat-box');
             box.innerHTML = '';
+            
+            window.messageMap = {};
+            data.forEach(m => window.messageMap[m.id] = m);
+
             data.forEach(m => renderMsg(m));
             box.scrollTop = box.scrollHeight;
         }
@@ -197,6 +224,17 @@
                 }
             }
 
+            let replyHTML = '';
+            if (m.reply_to && window.messageMap && window.messageMap[m.reply_to]) {
+                const parent = window.messageMap[m.reply_to];
+                replyHTML = `
+                    <div class="bg-black bg-opacity-20 border-l-4 border-blue-400 p-1.5 mb-1.5 rounded text-xs opacity-90">
+                        <span class="font-semibold text-blue-300 block">${escapeHtml(parent.username)}</span>
+                        <span class="truncate block text-slate-300">${escapeHtml(parent.content || '[Media]')}</span>
+                    </div>
+                `;
+            }
+
             let bubbleBg = '';
             if (currentTheme === 'whatsapp') {
                 bubbleBg = isMe ? 'bg-[#005c4b] text-[#e9edef]' : 'bg-[#202c33] text-[#e9edef]';
@@ -207,9 +245,11 @@
             div.innerHTML = `
                 <div class="flex items-center gap-2 mb-0.5 px-1">
                     <span class="text-[11px] font-medium ${currentTheme === 'whatsapp' ? 'text-emerald-400' : 'text-blue-400'}">${escapeHtml(m.username)}</span>
+                    <button onclick="setReplyTo(${m.id}, '${escapeHtml(m.username)}', '${escapeHtml(m.content || '')}')" class="text-[10px] text-slate-400 hover:text-white transition" title="Reply">Reply</button>
                     <button onclick="adminDelete(${m.id})" class="text-[10px] text-rose-400 hover:text-rose-300 font-semibold opacity-50 hover:opacity-100 transition" title="Admin Delete">×</button>
                 </div>
                 <div class="${bubbleBg} px-3.5 py-2 rounded-2xl text-sm max-w-xs sm:max-w-md break-words shadow-md relative">
+                    ${replyHTML}
                     ${m.content ? escapeHtml(m.content) : ''}
                     ${mediaHTML}
                     <div class="text-[9px] text-slate-300 text-right mt-1 opacity-70">
@@ -236,6 +276,7 @@
         }
 
         function escapeHtml(text) {
+            if (!text) return '';
             const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
             return text.replace(/[&<>"']/g, m => map[m]);
         }
@@ -263,15 +304,16 @@
                 username: myName,
                 content: text,
                 media_url: mediaUrl,
-                media_type: mediaType
+                media_type: mediaType,
+                reply_to: replyingToId
             }]);
 
             if (error) { alert('Error: ' + error.message); return; }
             input.value = '';
             clearMedia();
+            cancelReply();
         }
 
-        // Real-time Active Presence Tracking using Supabase Presence
         const presenceChannel = client.channel('online-users-room');
         presenceChannel
             .on('presence', { event: 'sync' }, () => {
@@ -288,6 +330,7 @@
         client
             .channel('messages-channel')
             .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, payload => {
+                if(window.messageMap) window.messageMap[payload.new.id] = payload.new;
                 renderMsg(payload.new);
                 const box = document.getElementById('chat-box');
                 box.scrollTop = box.scrollHeight;
