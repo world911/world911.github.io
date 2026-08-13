@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Number Extractor & Copier</title>
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --card-bg: #131b2e;
+            --card-border: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent-gradient: linear-gradient(135deg, #06b6d4, #3b82f6);
+            --accent-hover: #2563eb;
+            --badge-new: #f59e0b;
+            --badge-copied: #10b981;
+            --current-bg: #1e293b;
+            --current-border: #06b6d4;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 480px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .back-btn {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            color: var(--text-main);
+            padding: 10px 14px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        h1 {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        /* Input Section */
+        .input-section {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        label {
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        textarea {
+            width: 100%;
+            height: 90px;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            color: var(--text-main);
+            padding: 12px;
+            font-size: 14px;
+            resize: none;
+            outline: none;
+        }
+
+        textarea:focus {
+            border-color: #3b82f6;
+        }
+
+        .extract-btn {
+            background: var(--accent-gradient);
+            border: none;
+            color: white;
+            padding: 12px;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .extract-btn:active {
+            opacity: 0.8;
+        }
+
+        /* Action Controls Bar */
+        .controls-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .next-copy-btn {
+            flex: 1;
+            background: var(--accent-gradient);
+            border: none;
+            color: white;
+            padding: 16px;
+            border-radius: 16px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(6, 182, 212, 0.3);
+            transition: transform 0.1s;
+        }
+
+        .next-copy-btn:active {
+            transform: scale(0.98);
+        }
+
+        .side-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            align-items: flex-end;
+        }
+
+        .counter-badge {
+            font-size: 14px;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 6px;
+        }
+
+        .action-sm-btn {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            color: var(--text-main);
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .action-sm-btn:hover {
+            background: var(--current-bg);
+        }
+
+        .clear-history-btn {
+            color: #f87171;
+            border-color: rgba(248, 113, 113, 0.3);
+        }
+
+        /* Number List */
+        .list-header {
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-top: 5px;
+        }
+
+        .number-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-height: 400px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+
+        .number-row {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            padding: 14px 16px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .number-row:hover {
+            border-color: var(--text-muted);
+        }
+
+        .row-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .row-index {
+            color: var(--text-muted);
+            font-size: 14px;
+            font-weight: 500;
+            width: 20px;
+        }
+
+        .row-number {
+            font-size: 16px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        /* States Styling */
+        .number-row.current {
+            background: var(--current-bg);
+            border-color: var(--current-border);
+            box-shadow: 0 0 10px rgba(6, 182, 212, 0.15);
+        }
+
+        .number-row.copied {
+            opacity: 0.5;
+            background: #0f172a;
+            border-color: #1e293b;
+        }
+
+        .badge {
+            font-size: 11px;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 20px;
+            text-transform: uppercase;
+        }
+
+        .badge-new {
+            background: var(--badge-new);
+            color: #000;
+        }
+
+        .badge-done {
+            background: var(--badge-copied);
+            color: #000;
+        }
+
+        .badge-current {
+            background: #06b6d4;
+            color: #000;
+        }
+
+        /* Toast Notification */
+        #toast {
+            visibility: hidden;
+            min-width: 200px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 8px;
+            padding: 10px;
+            position: fixed;
+            z-index: 1000;
+            left: 50%;
+            bottom: 30px;
+            transform: translateX(-50%);
+            font-size: 14px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+
+        #toast.show {
+            visibility: visible;
+            animation: fadein 0.3s, fadeout 0.3s 1.5s;
+        }
+
+        @keyframes fadein {
+            from { bottom: 0; opacity: 0; }
+            to { bottom: 30px; opacity: 1; }
+        }
+
+        @keyframes fadeout {
+            from { bottom: 30px; opacity: 1; }
+            to { bottom: 0; opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <button class="back-btn" onclick="goBack()">←</button>
+            <h1 id="app-title">Number Extractor & Copier</h1>
+        </div>
+
+        <!-- Extract Input Box -->
+        <div class="input-section">
+            <label for="raw-input">Paste text with numbers below:</label>
+            <textarea id="raw-input" placeholder="Paste text here... e.g., Call 85512057955 or 855121400019"></textarea>
+            <button class="extract-btn" onclick="extractNumbers()">Extract Numbers</button>
+        </div>
+
+        <!-- Controls Row -->
+        <div class="controls-row">
+            <button class="next-copy-btn" onclick="copyNext()">Next ▸ Copy</button>
+            <div class="side-controls">
+                <div class="counter-badge" id="counter-display">0 / 0</div>
+                <div class="btn-group">
+                    <button class="action-sm-btn clear-history-btn" onclick="clearHistory()" title="Clear Copied History">Clear History</button>
+                    <button class="action-sm-btn" onclick="restartList()">Restart</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- List Section -->
+        <div class="list-header"><span id="total-count">0</span> numbers</div>
+        <div class="number-list" id="number-list-container">
+            <!-- Dynamically populated rows will appear here -->
+        </div>
+    </div>
+
+    <div id="toast">Copied to clipboard!</div>
+
+    <script>
+        let numbers = [];
+        let currentIndex = 0;
+        let copiedHistory = new Set();
+
+        // Preset sample data to match your screenshot initially
+        window.onload = function() {
+            document.getElementById('raw-input').value = `
+                85512057955
+                855121400019
+                855121404829
+                85512090795
+                85512056920
+                855121406002
+            `;
+            extractNumbers();
+        };
+
+        function extractNumbers() {
+            const rawText = document.getElementById('raw-input').value;
+            // Regex to find continuous number sequences (adjust length or pattern if needed)
+            const matches = rawText.match(/\d{5,}/g) || [];
+            
+            // Remove duplicates optionally or keep exact sequence
+            numbers = matches;
+            currentIndex = 0;
+            copiedHistory.clear();
+            
+            renderList();
+        }
+
+        function renderList() {
+            const container = document.getElementById('number-list-container');
+            container.innerHTML = '';
+            
+            document.getElementById('total-count').textContent = numbers.length;
+            document.getElementById('counter-display').textContent = `${Math.min(currentIndex + 1, numbers.length)} / ${numbers.length}`;
+
+            if (numbers.length === 0) {
+                container.innerHTML = '<div style="color: var(--text-muted); text-align: center; padding: 20px;">No numbers extracted yet.</div>';
+                return;
+            }
+
+            numbers.forEach((num, index) => {
+                const row = document.createElement('div');
+                row.className = 'number-row';
+                
+                let badgeHTML = '<span class="badge badge-new">NEW</span>';
+                
+                if (copiedHistory.has(index)) {
+                    row.classList.add('copied');
+                    badgeHTML = '<span class="badge badge-done">COPIED</span>';
+                } else if (index === currentIndex) {
+                    row.classList.add('current');
+                    badgeHTML = '<span class="badge badge-current">CURRENT</span>';
+                }
+
+                row.innerHTML = `
+                    <div class="row-left">
+                        <span class="row-index">${index + 1}</span>
+                        <span class="row-number">${num}</span>
+                    </div>
+                    <div>${badgeHTML}</div>
+                `;
+
+                // Touch or click to copy specific row directly
+                row.onclick = () => copySpecificRow(index);
+                container.appendChild(row);
+            });
+        }
+
+        function copyTextToClipboard(text, callback) {
+            navigator.clipboard.writeText(text).then(() => {
+                showToast(`Copied: ${text}`);
+                if (callback) callback();
+            }).catch(err => {
+                console.error('Failed to copy: ', err);
+            });
+        }
+
+        function copyNext() {
+            if (numbers.length === 0) return;
+            
+            // Find next uncopied index if current is already copied
+            while (currentIndex < numbers.length && copiedHistory.has(currentIndex)) {
+                currentIndex++;
+            }
+
+            if (currentIndex >= numbers.length) {
+                showToast("All numbers have been copied!");
+                return;
+            }
+
+            const targetNum = numbers[currentIndex];
+            copyTextToClipboard(targetNum, () => {
+                copiedHistory.add(currentIndex);
+                currentIndex++;
+                renderList();
+                scrollToCurrent();
+            });
+        }
+
+        function copySpecificRow(index) {
+            const targetNum = numbers[index];
+            copyTextToClipboard(targetNum, () => {
+                copiedHistory.add(index);
+                currentIndex = index + 1; // Update active tracker forward
+                renderList();
+            });
+        }
+
+        function restartList() {
+            currentIndex = 0;
+            copiedHistory.clear();
+            renderList();
+            showToast("Reset to beginning");
+        }
+
+        function clearHistory() {
+            copiedHistory.clear();
+            currentIndex = 0;
+            renderList();
+            showToast("Copied history cleared");
+        }
+
+        function scrollToCurrent() {
+            const container = document.getElementById('number-list-container');
+            const currentRowEl = container.children[currentIndex];
+            if (currentRowEl) {
+                currentRowEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+        }
+
+        function goBack() {
+            window.history.back();
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById("toast");
+            toast.textContent = message;
+            toast.className = "show";
+            setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 1800);
+        }
+    </script>
+</body>
+</html>
