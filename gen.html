@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gmail Dot Trick Generator & Copier</title>
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --card-bg: #131b2e;
+            --card-border: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent-gradient: linear-gradient(135deg, #06b6d4, #3b82f6);
+            /* Distinct colors for current vs copied rows */
+            --current-bg: #1e3a8a; /* Deep distinct blue */
+            --current-border: #3b82f6;
+            --copied-bg: #064e3b; /* Deep distinct dark green */
+            --copied-border: #059669;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 480px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        h1 {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        /* Toggle Input Button */
+        .toggle-input-trigger {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            color: var(--text-main);
+            padding: 10px 14px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+        }
+
+        /* Input Section (Collapsible) */
+        .input-section {
+            display: none;
+            flex-direction: column;
+            gap: 8px;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            padding: 14px;
+            border-radius: 14px;
+        }
+
+        .input-section.open {
+            display: flex;
+        }
+
+        label {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        input[type="text"] {
+            width: 100%;
+            background: #0b0f19;
+            border: 1px solid var(--card-border);
+            border-radius: 10px;
+            color: var(--text-main);
+            padding: 12px;
+            font-size: 14px;
+            outline: none;
+        }
+
+        input[type="text"]:focus {
+            border-color: #3b82f6;
+        }
+
+        .extract-btn {
+            background: var(--accent-gradient);
+            border: none;
+            color: white;
+            padding: 10px;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .extract-btn:active {
+            opacity: 0.8;
+        }
+
+        /* Action Controls Bar */
+        .controls-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .next-copy-btn {
+            flex: 1;
+            background: var(--accent-gradient);
+            border: none;
+            color: white;
+            padding: 16px;
+            border-radius: 16px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(6, 182, 212, 0.3);
+            transition: transform 0.1s;
+        }
+
+        .next-copy-btn:active {
+            transform: scale(0.98);
+        }
+
+        .side-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            align-items: flex-end;
+        }
+
+        .counter-badge {
+            font-size: 14px;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 6px;
+        }
+
+        .action-sm-btn {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            color: var(--text-main);
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .action-sm-btn:hover {
+            background: #1e293b;
+        }
+
+        .clear-history-btn {
+            color: #f87171;
+            border-color: rgba(248, 113, 113, 0.3);
+        }
+
+        /* Email List */
+        .list-header {
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-top: 5px;
+        }
+
+        .number-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-height: 420px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+
+        .number-row {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            padding: 14px 16px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .number-row:hover {
+            border-color: var(--text-muted);
+        }
+
+        .row-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            overflow: hidden;
+        }
+
+        .row-index {
+            color: var(--text-muted);
+            font-size: 14px;
+            font-weight: 500;
+            width: 20px;
+            flex-shrink: 0;
+        }
+
+        .row-number {
+            font-size: 15px;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+            word-break: break-all;
+        }
+
+        /* High-visibility States Styling */
+        .number-row.current {
+            background: var(--current-bg) !important;
+            border-color: var(--current-border) !important;
+            box-shadow: 0 0 12px rgba(59, 130, 246, 0.4);
+        }
+
+        .number-row.copied {
+            background: var(--copied-bg) !important;
+            border-color: var(--copied-border) !important;
+        }
+
+        .badge {
+            font-size: 11px;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 20px;
+            text-transform: uppercase;
+            flex-shrink: 0;
+        }
+
+        .badge-done {
+            background: #10b981;
+            color: #000;
+        }
+
+        .badge-current {
+            background: #60a5fa;
+            color: #000;
+        }
+
+        /* Toast Notification */
+        #toast {
+            visibility: hidden;
+            min-width: 200px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 8px;
+            padding: 10px;
+            position: fixed;
+            z-index: 1000;
+            left: 50%;
+            bottom: 30px;
+            transform: translateX(-50%);
+            font-size: 14px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+
+        #toast.show {
+            visibility: visible;
+            animation: fadein 0.3s, fadeout 0.3s 1.5s;
+        }
+
+        @keyframes fadein {
+            from { bottom: 0; opacity: 0; }
+            to { bottom: 30px; opacity: 1; }
+        }
+
+        @keyframes fadeout {
+            from { bottom: 30px; opacity: 1; }
+            to { bottom: 0; opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>Gmail Dot Trick Generator</h1>
+        </div>
+
+        <!-- Collapsible Input Trigger & Box -->
+        <button class="toggle-input-trigger" onclick="toggleInputBox()">
+            <span id="toggle-btn-text">Open Email Input Box</span>
+            <span id="toggle-arrow">▼</span>
+        </button>
+
+        <div class="input-section" id="input-section">
+            <label for="raw-input">Enter Gmail username or full email:</label>
+            <input type="text" id="raw-input" placeholder="e.g. fiiertod7@gmail.com or fiiertod7" />
+            <button class="extract-btn" onclick="generateDots()">Generate Dots</button>
+        </div>
+
+        <!-- Controls Row -->
+        <div class="controls-row">
+            <button class="next-copy-btn" onclick="copyNext()">Next ▸ Copy</button>
+            <div class="side-controls">
+                <div class="counter-badge" id="counter-display">0 / 0</div>
+                <div class="btn-group">
+                    <button class="action-sm-btn clear-history-btn" onclick="clearHistory()" title="Clear Copied History">Clear History</button>
+                    <button class="action-sm-btn" onclick="restartList()">Restart</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- List Section -->
+        <div class="list-header"><span id="total-count">0</span> generated emails</div>
+        <div class="number-list" id="number-list-container">
+            <!-- Dynamically populated rows will appear here -->
+        </div>
+    </div>
+
+    <div id="toast">Copied to clipboard!</div>
+
+    <script>
+        let baseEmails = [];
+        let emails = [];
+        let currentIndex = 0;
+        let copiedHistory = new Set();
+        let isInputOpen = false;
+
+        function toggleInputBox() {
+            isInputOpen = !isInputOpen;
+            const section = document.getElementById('input-section');
+            const arrow = document.getElementById('toggle-arrow');
+            const btnText = document.getElementById('toggle-btn-text');
+
+            if (isInputOpen) {
+                section.classList.add('open');
+                arrow.textContent = '▲';
+                btnText.textContent = 'Hide Email Input Box';
+            } else {
+                section.classList.remove('open');
+                arrow.textContent = '▼';
+                btnText.textContent = 'Open Email Input Box';
+            }
+        }
+
+        function getDotCombinations(str) {
+            const results = [];
+            const len = str.length;
+            if (len <= 1) return [str];
+            
+            const totalCombinations = 1 << (len - 1);
+            for (let i = 0; i < totalCombinations; i++) {
+                let current = '';
+                for (let j = 0; j < len; j++) {
+                    current += str[j];
+                    if (j < len - 1 && (i & (1 << j))) {
+                        current += '.';
+                    }
+                }
+                results.push(current);
+            }
+            return results;
+        }
+
+        function generateDots() {
+            let input = document.getElementById('raw-input').value.trim().toLowerCase();
+            if (!input) return;
+
+            let username = input;
+            let domain = '@gmail.com';
+
+            if (input.includes('@')) {
+                const parts = input.split('@');
+                username = parts[0];
+                domain = '@' + parts[1];
+            }
+
+            username = username.replace(/\./g, '');
+
+            if (username.length > 15) {
+                alert("Username is too long! Please keep it under 15 characters to prevent browser lag.");
+                return;
+            }
+
+            const rawPermutations = getDotCombinations(username);
+            baseEmails = rawPermutations.map(perm => perm + domain);
+            
+            emails = [...baseEmails];
+            currentIndex = 0;
+            copiedHistory.clear();
+            
+            renderList();
+            toggleInputBox();
+        }
+
+        function renderList() {
+            const container = document.getElementById('number-list-container');
+            container.innerHTML = '';
+            
+            document.getElementById('total-count').textContent = emails.length;
+            document.getElementById('counter-display').textContent = `${emails.length > 0 ? Math.min(currentIndex + 1, emails.length) : 0} / ${emails.length}`;
+
+            if (emails.length === 0) {
+                container.innerHTML = '<div style="color: var(--text-muted); text-align: center; padding: 20px;">No emails generated yet. Click the box above to enter an address.</div>';
+                return;
+            }
+
+            emails.forEach((email, index) => {
+                const row = document.createElement('div');
+                row.className = 'number-row';
+                
+                let badgeHTML = ''; 
+                
+                if (copiedHistory.has(index)) {
+                    row.classList.add('copied');
+                    badgeHTML = '<span class="badge badge-done">COPIED</span>';
+                } else if (index === currentIndex) {
+                    row.classList.add('current');
+                    badgeHTML = '<span class="badge badge-current">CURRENT</span>';
+                }
+
+                row.innerHTML = `
+                    <div class="row-left">
+                        <span class="row-index">${index + 1}</span>
+                        <span class="row-number">${email}</span>
+                    </div>
+                    <div>${badgeHTML}</div>
+                `;
+
+                row.onclick = () => copySpecificRow(index);
+                container.appendChild(row);
+            });
+        }
+
+        function copyTextToClipboard(text, callback) {
+            navigator.clipboard.writeText(text).then(() => {
+                showToast(`Copied: ${text}`);
+                if (callback) callback();
+            }).catch(err => {
+                console.error('Failed to copy: ', err);
+            });
+        }
+
+        function copyNext() {
+            if (emails.length === 0) return;
+            
+            while (currentIndex < emails.length && copiedHistory.has(currentIndex)) {
+                currentIndex++;
+            }
+
+            if (currentIndex >= emails.length) {
+                showToast("All emails have been copied!");
+                return;
+            }
+
+            const targetEmail = emails[currentIndex];
+            copyTextToClipboard(targetEmail, () => {
+                copiedHistory.add(currentIndex);
+                currentIndex++;
+                renderList();
+                scrollToCurrent();
+            });
+        }
+
+        function copySpecificRow(index) {
+            const targetEmail = emails[index];
+            copyTextToClipboard(targetEmail, () => {
+                copiedHistory.add(index);
+                renderList();
+            });
+        }
+
+        function restartList() {
+            currentIndex = 0;
+            copiedHistory.clear();
+            renderList();
+            showToast("Reset to beginning");
+        }
+
+        function clearHistory() {
+            copiedHistory.clear();
+            currentIndex = 0;
+            renderList();
+            showToast("Copied history cleared");
+        }
+
+        function scrollToCurrent() {
+            const container = document.getElementById('number-list-container');
+            const currentRowEl = container.children[currentIndex];
+            if (currentRowEl) {
+                currentRowEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById("toast");
+            toast.textContent = message;
+            toast.className = "show";
+            setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 1800);
+        }
+    </script>
+</body>
+</html>
