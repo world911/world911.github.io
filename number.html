@@ -217,6 +217,17 @@
             border-color: rgba(248, 113, 113, 0.3);
         }
 
+        .reset-all-btn {
+            color: #ef4444;
+            border-color: rgba(239, 68, 68, 0.4);
+            background: rgba(239, 68, 68, 0.05);
+            font-weight: 700;
+        }
+
+        .reset-all-btn:hover {
+            background: rgba(239, 68, 68, 0.15);
+        }
+
         .list-header {
             font-size: 14px;
             color: var(--text-muted);
@@ -362,6 +373,7 @@
                 <div class="btn-group">
                     <button class="action-sm-btn clear-history-btn" onclick="clearHistory()" title="Clear Copied History">Clear History</button>
                     <button class="action-sm-btn" onclick="restartList()">Restart</button>
+                    <button class="action-sm-btn reset-all-btn" onclick="resetAllData()" title="Wipe Storage & Reset">Reset</button>
                 </div>
             </div>
         </div>
@@ -379,6 +391,54 @@
         let copiedHistory = new Set();
         let currentMode = 'FULL';
         let isInputOpen = false;
+
+        // Load data from localStorage on start
+        window.addEventListener('DOMContentLoaded', () => {
+            loadFromLocalStorage();
+        });
+
+        function saveToLocalStorage() {
+            const data = {
+                originalNumbers,
+                currentIndex,
+                copiedHistory: Array.from(copiedHistory),
+                currentMode
+            };
+            localStorage.setItem('numTool_cache', JSON.stringify(data));
+        }
+
+        function loadFromLocalStorage() {
+            const saved = localStorage.getItem('numTool_cache');
+            if (saved) {
+                try {
+                    const data = JSON.parse(saved);
+                    originalNumbers = data.originalNumbers || [];
+                    currentIndex = data.currentIndex || 0;
+                    copiedHistory = new Set(data.copiedHistory || []);
+                    currentMode = data.currentMode || 'FULL';
+                    
+                    updateModeUI();
+                    applyModeTransformation();
+                    renderList();
+                } catch (e) {
+                    console.error("Failed to load cache", e);
+                }
+            }
+        }
+
+        function resetAllData() {
+            if (confirm("Are you sure you want to completely clear and wipe all data?")) {
+                localStorage.removeItem('numTool_cache');
+                originalNumbers = [];
+                numbers = [];
+                currentIndex = 0;
+                copiedHistory.clear();
+                currentMode = 'FULL';
+                updateModeUI();
+                renderList();
+                showToast("All data wiped successfully");
+            }
+        }
 
         function toggleInputBox() {
             isInputOpen = !isInputOpen;
@@ -406,21 +466,25 @@
             currentIndex = 0;
             copiedHistory.clear();
             
+            saveToLocalStorage();
             renderList();
             toggleInputBox();
         }
 
         function setMode(mode) {
             currentMode = mode;
-            
-            document.querySelectorAll('.pill-btn').forEach(btn => btn.classList.remove('active'));
-            if (mode === 'FULL') document.getElementById('mode-full').classList.add('active');
-            if (mode === 'PLUS') document.getElementById('mode-plus').classList.add('active');
-            if (mode === 'MINUS_2') document.getElementById('mode-minus2').classList.add('active');
-            if (mode === 'MINUS_3') document.getElementById('mode-minus3').classList.add('active');
-
+            updateModeUI();
             applyModeTransformation();
+            saveToLocalStorage();
             renderList();
+        }
+
+        function updateModeUI() {
+            document.querySelectorAll('.pill-btn').forEach(btn => btn.classList.remove('active'));
+            if (currentMode === 'FULL') document.getElementById('mode-full').classList.add('active');
+            if (currentMode === 'PLUS') document.getElementById('mode-plus').classList.add('active');
+            if (currentMode === 'MINUS_2') document.getElementById('mode-minus2').classList.add('active');
+            if (currentMode === 'MINUS_3') document.getElementById('mode-minus3').classList.add('active');
         }
 
         function applyModeTransformation() {
@@ -471,7 +535,6 @@
                     <div>${badgeHTML}</div>
                 `;
 
-                // Manual click updates current tracking index to this clicked row
                 row.onclick = () => copySpecificRow(index);
                 container.appendChild(row);
             });
@@ -502,6 +565,7 @@
             copyTextToClipboard(targetNum, () => {
                 copiedHistory.add(currentIndex);
                 currentIndex++;
+                saveToLocalStorage();
                 renderList();
                 scrollToCurrent();
             });
@@ -511,7 +575,8 @@
             const targetNum = numbers[index];
             copyTextToClipboard(targetNum, () => {
                 copiedHistory.add(index);
-                currentIndex = index; // Updates current pointer to the manually clicked row
+                currentIndex = index;
+                saveToLocalStorage();
                 renderList();
             });
         }
@@ -519,6 +584,7 @@
         function restartList() {
             currentIndex = 0;
             copiedHistory.clear();
+            saveToLocalStorage();
             renderList();
             showToast("Reset to beginning");
         }
@@ -526,6 +592,7 @@
         function clearHistory() {
             copiedHistory.clear();
             currentIndex = 0;
+            saveToLocalStorage();
             renderList();
             showToast("Copied history cleared");
         }
