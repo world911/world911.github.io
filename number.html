@@ -12,9 +12,6 @@
             --text-main: #f8fafc;
             --text-muted: #94a3b8;
             --accent-gradient: linear-gradient(135deg, #06b6d4, #3b82f6);
-            --accent-hover: #2563eb;
-            --badge-new: #f59e0b;
-            --badge-copied: #10b981;
             --current-bg: #1e293b;
             --current-border: #06b6d4;
         }
@@ -40,24 +37,14 @@
             max-width: 480px;
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: 16px;
         }
 
         /* Header */
         .header {
             display: flex;
             align-items: center;
-            gap: 15px;
-        }
-
-        .back-btn {
-            background: var(--card-bg);
-            border: 1px solid var(--card-border);
-            color: var(--text-main);
-            padding: 10px 14px;
-            border-radius: 12px;
-            cursor: pointer;
-            font-size: 16px;
+            justify-content: space-between;
         }
 
         h1 {
@@ -65,26 +52,50 @@
             font-weight: 600;
         }
 
-        /* Input Section */
-        .input-section {
+        /* Toggle Input Button */
+        .toggle-input-trigger {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            color: var(--text-main);
+            padding: 10px 14px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
             display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+        }
+
+        /* Input Section (Collapsible) */
+        .input-section {
+            display: none;
             flex-direction: column;
             gap: 8px;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            padding: 14px;
+            border-radius: 14px;
+        }
+
+        .input-section.open {
+            display: flex;
         }
 
         label {
-            font-size: 14px;
+            font-size: 13px;
             color: var(--text-muted);
         }
 
         textarea {
             width: 100%;
             height: 90px;
-            background: var(--card-bg);
+            background: #0b0f19;
             border: 1px solid var(--card-border);
-            border-radius: 12px;
+            border-radius: 10px;
             color: var(--text-main);
-            padding: 12px;
+            padding: 10px;
             font-size: 14px;
             resize: none;
             outline: none;
@@ -98,8 +109,8 @@
             background: var(--accent-gradient);
             border: none;
             color: white;
-            padding: 12px;
-            border-radius: 12px;
+            padding: 10px;
+            border-radius: 10px;
             font-weight: 600;
             cursor: pointer;
             transition: opacity 0.2s;
@@ -107,6 +118,42 @@
 
         .extract-btn:active {
             opacity: 0.8;
+        }
+
+        /* Strip / Add Bar */
+        .strip-add-bar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            padding: 10px 14px;
+            border-radius: 14px;
+            overflow-x: auto;
+        }
+
+        .strip-label {
+            font-size: 13px;
+            color: var(--text-muted);
+            white-space: nowrap;
+        }
+
+        .pill-btn {
+            background: #0b0f19;
+            border: 1px solid var(--card-border);
+            color: var(--text-muted);
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .pill-btn.active {
+            background: var(--text-main);
+            color: #0b0f19;
+            border-color: var(--text-main);
         }
 
         /* Action Controls Bar */
@@ -184,7 +231,7 @@
             display: flex;
             flex-direction: column;
             gap: 10px;
-            max-height: 400px;
+            max-height: 380px;
             overflow-y: auto;
             padding-right: 4px;
         }
@@ -245,13 +292,8 @@
             text-transform: uppercase;
         }
 
-        .badge-new {
-            background: var(--badge-new);
-            color: #000;
-        }
-
         .badge-done {
-            background: var(--badge-copied);
+            background: #10b981;
             color: #000;
         }
 
@@ -299,15 +341,28 @@
     <div class="container">
         <!-- Header -->
         <div class="header">
-            <button class="back-btn" onclick="goBack()">←</button>
             <h1 id="app-title">Number Extractor & Copier</h1>
         </div>
 
-        <!-- Extract Input Box -->
-        <div class="input-section">
+        <!-- Collapsible Input Trigger & Box -->
+        <button class="toggle-input-trigger" onclick="toggleInputBox()">
+            <span id="toggle-btn-text">Open Number Extract Input Box</span>
+            <span id="toggle-arrow">▼</span>
+        </button>
+
+        <div class="input-section" id="input-section">
             <label for="raw-input">Paste text with numbers below:</label>
-            <textarea id="raw-input" placeholder="Paste text here... e.g., Call 85512057955 or 855121400019"></textarea>
-            <button class="extract-btn" onclick="extractNumbers()">Extract Numbers</button>
+            <textarea id="raw-input" placeholder="Paste text here... numbers will be extracted automatically"></textarea>
+            <button class="extract-btn" onclick="extractNumbers()">Extract & Apply</button>
+        </div>
+
+        <!-- Strip / Add Control Bar -->
+        <div class="strip-add-bar">
+            <span class="strip-label">Strip / add:</span>
+            <button class="pill-btn active" id="mode-full" onclick="setMode('FULL')">FULL</button>
+            <button class="pill-btn" id="mode-plus" onclick="setMode('PLUS')">+</button>
+            <button class="pill-btn" id="mode-minus2" onclick="setMode('MINUS_2')">-2</button>
+            <button class="pill-btn" id="mode-minus3" onclick="setMode('MINUS_3')">-3</button>
         </div>
 
         <!-- Controls Row -->
@@ -332,34 +387,71 @@
     <div id="toast">Copied to clipboard!</div>
 
     <script>
+        let originalNumbers = [];
         let numbers = [];
         let currentIndex = 0;
         let copiedHistory = new Set();
+        let currentMode = 'FULL';
+        let isInputOpen = false;
 
-        // Preset sample data to match your screenshot initially
-        window.onload = function() {
-            document.getElementById('raw-input').value = `
-                85512057955
-                855121400019
-                855121404829
-                85512090795
-                85512056920
-                855121406002
-            `;
-            extractNumbers();
-        };
+        function toggleInputBox() {
+            isInputOpen = !isInputOpen;
+            const section = document.getElementById('input-section');
+            const arrow = document.getElementById('toggle-arrow');
+            const btnText = document.getElementById('toggle-btn-text');
+
+            if (isInputOpen) {
+                section.classList.add('open');
+                arrow.textContent = '▲';
+                btnText.textContent = 'Hide Input Box';
+            } else {
+                section.classList.remove('open');
+                arrow.textContent = '▼';
+                btnText.textContent = 'Open Number Extract Input Box';
+            }
+        }
 
         function extractNumbers() {
             const rawText = document.getElementById('raw-input').value;
-            // Regex to find continuous number sequences (adjust length or pattern if needed)
             const matches = rawText.match(/\d{5,}/g) || [];
             
-            // Remove duplicates optionally or keep exact sequence
-            numbers = matches;
+            originalNumbers = matches;
+            applyModeTransformation();
             currentIndex = 0;
             copiedHistory.clear();
             
             renderList();
+            
+            // Optionally auto-shrink input box after extracting for convenience
+            toggleInputBox();
+        }
+
+        function setMode(mode) {
+            currentMode = mode;
+            
+            // Update UI pill active states
+            document.querySelectorAll('.pill-btn').forEach(btn => btn.classList.remove('active'));
+            if (mode === 'FULL') document.getElementById('mode-full').classList.add('active');
+            if (mode === 'PLUS') document.getElementById('mode-plus').classList.add('active');
+            if (mode === 'MINUS_2') document.getElementById('mode-minus2').classList.add('active');
+            if (mode === 'MINUS_3') document.getElementById('mode-minus3').classList.add('active');
+
+            applyModeTransformation();
+            renderList();
+        }
+
+        function applyModeTransformation() {
+            numbers = originalNumbers.map(num => {
+                if (currentMode === 'PLUS') {
+                    return '+' + num;
+                } else if (currentMode === 'MINUS_2') {
+                    return num.length > 2 ? num.substring(2) : num;
+                } else if (currentMode === 'MINUS_3') {
+                    return num.length > 3 ? num.substring(3) : num;
+                } else {
+                    return num; // FULL
+                }
+            });
         }
 
         function renderList() {
@@ -367,10 +459,10 @@
             container.innerHTML = '';
             
             document.getElementById('total-count').textContent = numbers.length;
-            document.getElementById('counter-display').textContent = `${Math.min(currentIndex + 1, numbers.length)} / ${numbers.length}`;
+            document.getElementById('counter-display').textContent = `${numbers.length > 0 ? Math.min(currentIndex + 1, numbers.length) : 0} / ${numbers.length}`;
 
             if (numbers.length === 0) {
-                container.innerHTML = '<div style="color: var(--text-muted); text-align: center; padding: 20px;">No numbers extracted yet.</div>';
+                container.innerHTML = '<div style="color: var(--text-muted); text-align: center; padding: 20px;">No numbers extracted yet. Click the box above to paste text.</div>';
                 return;
             }
 
@@ -378,7 +470,7 @@
                 const row = document.createElement('div');
                 row.className = 'number-row';
                 
-                let badgeHTML = '<span class="badge badge-new">NEW</span>';
+                let badgeHTML = ''; 
                 
                 if (copiedHistory.has(index)) {
                     row.classList.add('copied');
@@ -396,7 +488,6 @@
                     <div>${badgeHTML}</div>
                 `;
 
-                // Touch or click to copy specific row directly
                 row.onclick = () => copySpecificRow(index);
                 container.appendChild(row);
             });
@@ -414,7 +505,6 @@
         function copyNext() {
             if (numbers.length === 0) return;
             
-            // Find next uncopied index if current is already copied
             while (currentIndex < numbers.length && copiedHistory.has(currentIndex)) {
                 currentIndex++;
             }
@@ -437,7 +527,7 @@
             const targetNum = numbers[index];
             copyTextToClipboard(targetNum, () => {
                 copiedHistory.add(index);
-                currentIndex = index + 1; // Update active tracker forward
+                currentIndex = index + 1;
                 renderList();
             });
         }
@@ -462,10 +552,6 @@
             if (currentRowEl) {
                 currentRowEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             }
-        }
-
-        function goBack() {
-            window.history.back();
         }
 
         function showToast(message) {
