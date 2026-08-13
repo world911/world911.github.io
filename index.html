@@ -189,9 +189,9 @@
         }
 
         async function adminDelete(id) {
-            const code = prompt('Enter Admin Password to delete message:');
+            const code = prompt('Enter Password:');
             if (code !== 'chudlingpong') {
-                if (code !== null) alert('Incorrect admin password!');
+                if (code !== null) alert('Incorrect password!');
                 return;
             }
 
