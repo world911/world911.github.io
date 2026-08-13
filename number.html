@@ -154,7 +154,7 @@
             border-color: var(--text-main);
         }
 
-        /* Layout section matching screenshot */
+        /* Actions Panel with Full Width Next Button */
         .actions-panel {
             background: var(--card-bg);
             border: 1px solid var(--card-border);
@@ -169,16 +169,17 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
+            position: relative;
         }
 
         .next-copy-btn {
-            width: 130px;
+            width: 100%;
             height: 52px;
             background: var(--accent-gradient);
             border: none;
             color: white;
             border-radius: 14px;
-            font-size: 15px;
+            font-size: 16px;
             font-weight: 700;
             cursor: pointer;
             display: flex;
@@ -193,9 +194,13 @@
         }
 
         .counter-badge {
+            position: absolute;
+            right: 14px;
             font-size: 14px;
-            color: var(--text-muted);
+            color: #ffffff;
             font-weight: 600;
+            pointer-events: none;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.5);
         }
 
         .bottom-action-row {
@@ -374,7 +379,7 @@
             <button class="pill-btn" id="mode-minus3" onclick="setMode('MINUS_3')">-3</button>
         </div>
 
-        <!-- Actions Panel matching screenshot layout -->
+        <!-- Actions Panel with Full Width Next Button -->
         <div class="actions-panel">
             <div class="top-action-row">
                 <button class="next-copy-btn" onclick="copyNext()">Next ▸ Copy</button>
