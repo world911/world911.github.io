@@ -15,9 +15,8 @@
             <div id="header-icon" class="w-10 h-10 rounded-full bg-[#0084ff] flex items-center justify-center font-bold text-white shadow">💬</div>
             <div>
                 <h1 class="text-base font-semibold leading-tight">Live Chat</h1>
-                <span class="text-xs text-emerald-400 font-medium flex items-center gap-1">
-                    <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span> Online
-                </span>
+                <!-- UTC+6 Bangladesh Time & Date Clock -->
+                <span id="live-clock" class="text-xs text-slate-400 font-medium">Loading...</span>
             </div>
         </div>
         <div class="flex items-center gap-2">
@@ -62,6 +61,27 @@
         const SUPABASE_KEY = 'sb_publishable_8v0SCUFZ-LAxGb0VcY5MLg_xyLtRkfy';
         const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+        // UTC+6 Bangladesh Time & Date Clock
+        function updateLiveClock() {
+            const now = new Date();
+            const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+            const bdTime = new Date(utc + (6 * 3600000));
+            
+            let hours = bdTime.getHours();
+            const minutes = String(bdTime.getMinutes()).padStart(2, '0');
+            const seconds = String(bdTime.getSeconds()).padStart(2, '0');
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12 || 12;
+            
+            const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+            const month = months[bdTime.getMonth()];
+            const day = bdTime.getDate();
+            
+            document.getElementById('live-clock').textContent = `${hours}:${minutes}:${seconds} ${ampm} ${month} ${day}`;
+        }
+        setInterval(updateLiveClock, 1000);
+        updateLiveClock();
+
         let myName = localStorage.getItem('chat_user') || ('User_' + Math.floor(Math.random() * 9000 + 1000));
         localStorage.setItem('chat_user', myName);
         document.getElementById('username-display').textContent = myName;
@@ -72,7 +92,7 @@
             currentTheme = currentTheme === 'messenger' ? 'whatsapp' : 'messenger';
             localStorage.setItem('chat_theme', currentTheme);
             applyTheme();
-            loadMessages(); // Re-render messages to apply correct bubble colors
+            loadMessages();
         }
 
         function applyTheme() {
@@ -105,7 +125,6 @@
             }
         }
 
-        // Initialize theme on page load
         applyTheme();
 
         function changeName() {
@@ -189,9 +208,9 @@
         }
 
         async function adminDelete(id) {
-            const code = prompt('Enter Password:');
+            const code = prompt('Enter Admin Password to delete message:');
             if (code !== 'chudlingpong') {
-                if (code !== null) alert('Incorrect password!');
+                if (code !== null) alert('Incorrect admin password!');
                 return;
             }
 
