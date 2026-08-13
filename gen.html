@@ -12,10 +12,9 @@
             --text-main: #f8fafc;
             --text-muted: #94a3b8;
             --accent-gradient: linear-gradient(135deg, #06b6d4, #3b82f6);
-            /* Distinct colors for current vs copied rows */
-            --current-bg: #1e3a8a; /* Deep distinct blue */
+            --current-bg: #1e3a8a;
             --current-border: #3b82f6;
-            --copied-bg: #064e3b; /* Deep distinct dark green */
+            --copied-bg: #064e3b;
             --copied-border: #059669;
         }
 
@@ -43,7 +42,6 @@
             gap: 16px;
         }
 
-        /* Header */
         .header {
             display: flex;
             align-items: center;
@@ -55,7 +53,6 @@
             font-weight: 600;
         }
 
-        /* Toggle Input Button */
         .toggle-input-trigger {
             background: var(--card-bg);
             border: 1px solid var(--card-border);
@@ -71,7 +68,6 @@
             width: 100%;
         }
 
-        /* Input Section (Collapsible) */
         .input-section {
             display: none;
             flex-direction: column;
@@ -121,7 +117,6 @@
             opacity: 0.8;
         }
 
-        /* Action Controls Bar */
         .controls-row {
             display: flex;
             gap: 10px;
@@ -185,7 +180,6 @@
             border-color: rgba(248, 113, 113, 0.3);
         }
 
-        /* Email List */
         .list-header {
             font-size: 14px;
             color: var(--text-muted);
@@ -239,7 +233,6 @@
             word-break: break-all;
         }
 
-        /* High-visibility States Styling */
         .number-row.current {
             background: var(--current-bg) !important;
             border-color: var(--current-border) !important;
@@ -270,7 +263,6 @@
             color: #000;
         }
 
-        /* Toast Notification */
         #toast {
             visibility: hidden;
             min-width: 200px;
@@ -307,12 +299,10 @@
 <body>
 
     <div class="container">
-        <!-- Header -->
         <div class="header">
             <h1>Gmail Dot Trick Generator</h1>
         </div>
 
-        <!-- Collapsible Input Trigger & Box -->
         <button class="toggle-input-trigger" onclick="toggleInputBox()">
             <span id="toggle-btn-text">Open Email Input Box</span>
             <span id="toggle-arrow">▼</span>
@@ -324,7 +314,6 @@
             <button class="extract-btn" onclick="generateDots()">Generate Dots</button>
         </div>
 
-        <!-- Controls Row -->
         <div class="controls-row">
             <button class="next-copy-btn" onclick="copyNext()">Next ▸ Copy</button>
             <div class="side-controls">
@@ -336,11 +325,8 @@
             </div>
         </div>
 
-        <!-- List Section -->
         <div class="list-header"><span id="total-count">0</span> generated emails</div>
-        <div class="number-list" id="number-list-container">
-            <!-- Dynamically populated rows will appear here -->
-        </div>
+        <div class="number-list" id="number-list-container"></div>
     </div>
 
     <div id="toast">Copied to clipboard!</div>
@@ -437,12 +423,12 @@
                 
                 let badgeHTML = ''; 
                 
-                if (copiedHistory.has(index)) {
-                    row.classList.add('copied');
-                    badgeHTML = '<span class="badge badge-done">COPIED</span>';
-                } else if (index === currentIndex) {
+                if (index === currentIndex) {
                     row.classList.add('current');
                     badgeHTML = '<span class="badge badge-current">CURRENT</span>';
+                } else if (copiedHistory.has(index)) {
+                    row.classList.add('copied');
+                    badgeHTML = '<span class="badge badge-done">COPIED</span>';
                 }
 
                 row.innerHTML = `
@@ -492,6 +478,7 @@
             const targetEmail = emails[index];
             copyTextToClipboard(targetEmail, () => {
                 copiedHistory.add(index);
+                currentIndex = index;
                 renderList();
             });
         }
