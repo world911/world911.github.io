@@ -14,19 +14,22 @@
         <div class="flex items-center gap-3">
             <div id="header-icon" class="w-10 h-10 rounded-full bg-[#0084ff] flex items-center justify-center font-bold text-white shadow flex-shrink-0">💬</div>
             <div>
-                <h1 class="text-base font-semibold leading-tight">Live Chat</h1>
+                <h1 class="text-base font-semibold leading-tight flex items-center gap-2">
+                    Live Chat
+                    <span class="text-[11px] font-normal text-emerald-400 flex items-center gap-1 bg-[#3a3b3c] px-2 py-0.5 rounded-full">
+                        <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span> <span id="online-count">1</span> Online
+                    </span>
+                </h1>
                 <!-- UTC+6 Bangladesh Time & Date Clock on a single line -->
                 <span id="live-clock" class="text-xs text-slate-400 font-medium whitespace-nowrap">Loading...</span>
             </div>
         </div>
         <div class="flex items-center gap-2">
-            <!-- Theme Toggle Icon Button -->
-            <button onclick="toggleTheme()" id="theme-btn" class="bg-[#3a3b3c] hover:bg-[#4e4f50] p-2 rounded-lg text-slate-200 transition flex items-center justify-center" title="Switch Theme">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 73.593v-3.186a2 2 0 012-2h2.343" />
-                </svg>
+            <!-- Theme Toggle Text/Icon Button -->
+            <button onclick="toggleTheme()" id="theme-btn" class="bg-[#3a3b3c] hover:bg-[#4e4f50] text-xs px-2.5 py-2 rounded-lg text-slate-200 transition flex items-center gap-1.5 font-medium" title="Switch Theme">
+                <span id="theme-icon">🟢</span> <span id="theme-text">WhatsApp</span>
             </button>
-            <span id="username-display" class="text-xs text-slate-300 font-medium bg-[#3a3b3c] px-2.5 py-2 rounded-lg border border-[#4e4f50] truncate max-w-[90px]"></span>
+            <span id="username-display" class="text-xs text-slate-300 font-medium bg-[#3a3b3c] px-2.5 py-2 rounded-lg border border-[#4e4f50] truncate max-w-[80px]"></span>
             <!-- Edit Name Icon Button -->
             <button onclick="changeName()" class="bg-[#3a3b3c] hover:bg-[#4e4f50] p-2 rounded-lg text-slate-200 transition flex items-center justify-center" title="Edit Name">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -111,6 +114,8 @@
             const preview = document.getElementById('media-preview-container');
             const headerIcon = document.getElementById('header-icon');
             const sendBtn = document.getElementById('send-btn');
+            const themeText = document.getElementById('theme-text');
+            const themeIcon = document.getElementById('theme-icon');
 
             if (currentTheme === 'whatsapp') {
                 body.className = "bg-[#0b141a] text-slate-100 h-screen flex flex-col justify-between transition-colors duration-300";
@@ -119,6 +124,8 @@
                 preview.className = "px-4 hidden bg-[#202c33] py-2 border-t border-[#222d34] flex items-center justify-between transition-colors duration-300";
                 headerIcon.className = "w-10 h-10 rounded-full bg-emerald-600 flex items-center justify-center font-bold text-white shadow flex-shrink-0";
                 sendBtn.className = "bg-emerald-600 hover:bg-emerald-500 text-white px-5 py-2.5 rounded-lg text-sm font-medium transition shadow flex items-center justify-center";
+                themeText.textContent = "Messenger";
+                themeIcon.textContent = "💬";
             } else {
                 body.className = "bg-[#18191a] text-[#e4e6eb] h-screen flex flex-col justify-between transition-colors duration-300";
                 header.className = "bg-[#242526] border-b border-[#393a3b] px-4 py-3 flex justify-between items-center shadow-md transition-colors duration-300";
@@ -126,6 +133,8 @@
                 preview.className = "px-4 hidden bg-[#242526] py-2 border-t border-[#393a3b] flex items-center justify-between transition-colors duration-300";
                 headerIcon.className = "w-10 h-10 rounded-full bg-[#0084ff] flex items-center justify-center font-bold text-white shadow flex-shrink-0";
                 sendBtn.className = "bg-[#0084ff] hover:bg-[#006dd6] text-white px-5 py-2.5 rounded-full text-sm font-medium transition shadow flex items-center justify-center";
+                themeText.textContent = "WhatsApp";
+                themeIcon.textContent = "🟢";
             }
         }
 
@@ -261,6 +270,20 @@
             input.value = '';
             clearMedia();
         }
+
+        // Real-time Active Presence Tracking using Supabase Presence
+        const presenceChannel = client.channel('online-users-room');
+        presenceChannel
+            .on('presence', { event: 'sync' }, () => {
+                const state = presenceChannel.presenceState();
+                const totalOnline = Object.keys(state).length;
+                document.getElementById('online-count').textContent = totalOnline > 0 ? totalOnline : 1;
+            })
+            .subscribe(async (status) => {
+                if (status === 'SUBSCRIBED') {
+                    await presenceChannel.track({ user: myName, online_at: new Date().toISOString() });
+                }
+            });
 
         client
             .channel('messages-channel')
