@@ -12,8 +12,10 @@
             --text-main: #f8fafc;
             --text-muted: #94a3b8;
             --accent-gradient: linear-gradient(135deg, #06b6d4, #3b82f6);
-            --current-bg: #1e293b;
-            --current-border: #06b6d4;
+            --current-bg: #1e3a8a;
+            --current-border: #3b82f6;
+            --copied-bg: #064e3b;
+            --copied-border: #059669;
         }
 
         * {
@@ -40,7 +42,6 @@
             gap: 16px;
         }
 
-        /* Header */
         .header {
             display: flex;
             align-items: center;
@@ -52,7 +53,6 @@
             font-weight: 600;
         }
 
-        /* Toggle Input Button */
         .toggle-input-trigger {
             background: var(--card-bg);
             border: 1px solid var(--card-border);
@@ -68,7 +68,6 @@
             width: 100%;
         }
 
-        /* Input Section (Collapsible) */
         .input-section {
             display: none;
             flex-direction: column;
@@ -120,7 +119,6 @@
             opacity: 0.8;
         }
 
-        /* Strip / Add Bar */
         .strip-add-bar {
             display: flex;
             align-items: center;
@@ -156,7 +154,6 @@
             border-color: var(--text-main);
         }
 
-        /* Action Controls Bar */
         .controls-row {
             display: flex;
             gap: 10px;
@@ -212,7 +209,7 @@
         }
 
         .action-sm-btn:hover {
-            background: var(--current-bg);
+            background: #1e293b;
         }
 
         .clear-history-btn {
@@ -220,7 +217,6 @@
             border-color: rgba(248, 113, 113, 0.3);
         }
 
-        /* Number List */
         .list-header {
             font-size: 14px;
             color: var(--text-muted);
@@ -271,17 +267,15 @@
             letter-spacing: 0.5px;
         }
 
-        /* States Styling */
         .number-row.current {
-            background: var(--current-bg);
-            border-color: var(--current-border);
-            box-shadow: 0 0 10px rgba(6, 182, 212, 0.15);
+            background: var(--current-bg) !important;
+            border-color: var(--current-border) !important;
+            box-shadow: 0 0 12px rgba(59, 130, 246, 0.4);
         }
 
         .number-row.copied {
-            opacity: 0.5;
-            background: #0f172a;
-            border-color: #1e293b;
+            background: var(--copied-bg) !important;
+            border-color: var(--copied-border) !important;
         }
 
         .badge {
@@ -298,11 +292,10 @@
         }
 
         .badge-current {
-            background: #06b6d4;
+            background: #60a5fa;
             color: #000;
         }
 
-        /* Toast Notification */
         #toast {
             visibility: hidden;
             min-width: 200px;
@@ -339,12 +332,10 @@
 <body>
 
     <div class="container">
-        <!-- Header -->
         <div class="header">
             <h1 id="app-title">Number Extractor & Copier</h1>
         </div>
 
-        <!-- Collapsible Input Trigger & Box -->
         <button class="toggle-input-trigger" onclick="toggleInputBox()">
             <span id="toggle-btn-text">Open Number Extract Input Box</span>
             <span id="toggle-arrow">▼</span>
@@ -356,7 +347,6 @@
             <button class="extract-btn" onclick="extractNumbers()">Extract & Apply</button>
         </div>
 
-        <!-- Strip / Add Control Bar -->
         <div class="strip-add-bar">
             <span class="strip-label">Strip / add:</span>
             <button class="pill-btn active" id="mode-full" onclick="setMode('FULL')">FULL</button>
@@ -365,7 +355,6 @@
             <button class="pill-btn" id="mode-minus3" onclick="setMode('MINUS_3')">-3</button>
         </div>
 
-        <!-- Controls Row -->
         <div class="controls-row">
             <button class="next-copy-btn" onclick="copyNext()">Next ▸ Copy</button>
             <div class="side-controls">
@@ -377,11 +366,8 @@
             </div>
         </div>
 
-        <!-- List Section -->
         <div class="list-header"><span id="total-count">0</span> numbers</div>
-        <div class="number-list" id="number-list-container">
-            <!-- Dynamically populated rows will appear here -->
-        </div>
+        <div class="number-list" id="number-list-container"></div>
     </div>
 
     <div id="toast">Copied to clipboard!</div>
@@ -421,15 +407,12 @@
             copiedHistory.clear();
             
             renderList();
-            
-            // Optionally auto-shrink input box after extracting for convenience
             toggleInputBox();
         }
 
         function setMode(mode) {
             currentMode = mode;
             
-            // Update UI pill active states
             document.querySelectorAll('.pill-btn').forEach(btn => btn.classList.remove('active'));
             if (mode === 'FULL') document.getElementById('mode-full').classList.add('active');
             if (mode === 'PLUS') document.getElementById('mode-plus').classList.add('active');
@@ -449,7 +432,7 @@
                 } else if (currentMode === 'MINUS_3') {
                     return num.length > 3 ? num.substring(3) : num;
                 } else {
-                    return num; // FULL
+                    return num;
                 }
             });
         }
@@ -472,12 +455,12 @@
                 
                 let badgeHTML = ''; 
                 
-                if (copiedHistory.has(index)) {
-                    row.classList.add('copied');
-                    badgeHTML = '<span class="badge badge-done">COPIED</span>';
-                } else if (index === currentIndex) {
+                if (index === currentIndex) {
                     row.classList.add('current');
                     badgeHTML = '<span class="badge badge-current">CURRENT</span>';
+                } else if (copiedHistory.has(index)) {
+                    row.classList.add('copied');
+                    badgeHTML = '<span class="badge badge-done">COPIED</span>';
                 }
 
                 row.innerHTML = `
@@ -488,6 +471,7 @@
                     <div>${badgeHTML}</div>
                 `;
 
+                // Manual click updates current tracking index to this clicked row
                 row.onclick = () => copySpecificRow(index);
                 container.appendChild(row);
             });
@@ -527,7 +511,7 @@
             const targetNum = numbers[index];
             copyTextToClipboard(targetNum, () => {
                 copiedHistory.add(index);
-                currentIndex = index + 1;
+                currentIndex = index; // Updates current pointer to the manually clicked row
                 renderList();
             });
         }
