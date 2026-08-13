@@ -4,26 +4,53 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Public Live Chat</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Supabase JS Client Library -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-<body class="bg-gray-900 text-gray-100 h-screen flex flex-col justify-between">
+<body class="bg-slate-950 text-slate-100 h-screen flex flex-col justify-between">
 
     <!-- Header -->
-    <header class="bg-gray-800 border-b border-gray-700 p-4 flex justify-between items-center">
-        <h1 class="text-xl font-bold text-emerald-400">Public Live Chat</h1>
-        <span id="username-display" class="text-sm text-gray-300"></span>
+    <header class="bg-slate-900 border-b border-slate-800 p-4 flex justify-between items-center shadow-lg">
+        <h1 class="text-lg font-bold text-indigo-400 flex items-center gap-2">
+            <span class="w-3 h-3 bg-indigo-500 rounded-full animate-pulse"></span>
+            Public Live Chat
+        </h1>
+        <div class="flex items-center gap-3">
+            <span id="username-display" class="text-sm text-slate-300 font-medium"></span>
+            <button onclick="changeName()" class="bg-slate-800 hover:bg-slate-700 text-xs px-3 py-1.5 rounded-lg border border-slate-700 transition">Change Name</button>
+        </div>
     </header>
 
     <!-- Messages Box -->
-    <div id="chat-box" class="flex-1 overflow-y-auto p-4 space-y-3 flex flex-col"></div>
+    <div id="chat-box" class="flex-1 overflow-y-auto p-4 space-y-4 flex flex-col"></div>
+
+    <!-- Media Preview Bar -->
+    <div id="media-preview-container" class="px-4 hidden bg-slate-900 py-2 border-t border-slate-800 flex items-center justify-between">
+        <span id="file-name-display" class="text-xs text-indigo-400 truncate"></span>
+        <button onclick="clearMedia()" class="text-rose-400 hover:text-rose-300 text-xs font-medium">Remove</button>
+    </div>
 
     <!-- Input Form -->
-    <form id="chat-form" onsubmit="postMessage(event)" class="bg-gray-800 p-3 border-t border-gray-700 flex gap-2">
-        <input type="text" id="msg-input" placeholder="Type a message..." autocomplete="off"
-            class="flex-1 bg-gray-700 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm">
-        <button type="submit" class="bg-emerald-600 hover:bg-emerald-500 text-white px-5 py-2 rounded-lg text-sm font-medium">Send</button>
-    </form>
+    <footer class="bg-slate-900 border-t border-slate-800 p-3">
+        <form id="chat-form" onsubmit="postMessage(event)" class="flex items-center gap-2 max-w-4xl mx-auto">
+            <!-- File Upload Button -->
+            <label class="cursor-pointer bg-slate-800 hover:bg-slate-700 p-2.5 rounded-xl text-slate-300 border border-slate-700 transition flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                </svg>
+                <input type="file" id="media-file" class="hidden" accept="image/*,video/*" onchange="previewFile()">
+            </label>
+
+            <!-- Text Input -->
+            <input type="text" id="msg-input" placeholder="Type a message..." autocomplete="off"
+                class="flex-1 bg-slate-800 text-white px-4 py-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 border border-slate-700 text-sm">
+
+            <!-- Send Button -->
+            <button type="submit" class="bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2.5 rounded-xl text-sm font-medium transition shadow-sm">Send</button>
+        </form>
+    </footer>
 
     <script>
         const SUPABASE_URL = 'https://dtdcywegbilszwlbiyvh.supabase.co';
@@ -33,6 +60,32 @@
         let myName = localStorage.getItem('chat_user') || ('User_' + Math.floor(Math.random() * 9000 + 1000));
         localStorage.setItem('chat_user', myName);
         document.getElementById('username-display').textContent = myName;
+
+        function changeName() {
+            const newName = prompt('Enter your new name:', myName);
+            if (newName && newName.trim() !== '') {
+                myName = newName.trim();
+                localStorage.setItem('chat_user', myName);
+                document.getElementById('username-display').textContent = myName;
+            }
+        }
+
+        let selectedFile = null;
+
+        function previewFile() {
+            const fileInput = document.getElementById('media-file');
+            if (fileInput.files.length > 0) {
+                selectedFile = fileInput.files[0];
+                document.getElementById('file-name-display').textContent = 'Attached: ' + selectedFile.name;
+                document.getElementById('media-preview-container').classList.remove('hidden');
+            }
+        }
+
+        function clearMedia() {
+            selectedFile = null;
+            document.getElementById('media-file').value = '';
+            document.getElementById('media-preview-container').classList.add('hidden');
+        }
 
         async function loadMessages() {
             const { data, error } = await client
@@ -56,11 +109,22 @@
             const box = document.getElementById('chat-box');
             const isMe = m.username === myName;
             const div = document.createElement('div');
-            div.className = `flex flex-col ${isMe ? 'items-end' : 'items-start'}`;
+            div.className = `flex flex-col ${isMe ? 'items-end' : 'items-start'} max-w-full`;
+
+            let mediaHTML = '';
+            if (m.media_url) {
+                if (m.media_type && m.media_type.startsWith('video/')) {
+                    mediaHTML = `<video src="${m.media_url}" controls class="max-w-xs sm:max-w-sm rounded-lg mt-2 max-h-60"></video>`;
+                } else {
+                    mediaHTML = `<a href="${m.media_url}" target="_blank"><img src="${m.media_url}" class="max-w-xs sm:max-w-sm rounded-lg mt-2 max-h-60 object-cover border border-slate-700"></a>`;
+                }
+            }
+
             div.innerHTML = `
-                <span class="text-[10px] text-gray-400 mb-0.5">${escapeHtml(m.username)}</span>
-                <div class="${isMe ? 'bg-emerald-600 text-white' : 'bg-gray-800 text-gray-200'} px-3 py-2 rounded-xl text-sm max-w-xs break-words">
-                    ${escapeHtml(m.content || '')}
+                <span class="text-[10px] text-slate-400 mb-1 px-1">${escapeHtml(m.username)}</span>
+                <div class="${isMe ? 'bg-indigo-600 text-white' : 'bg-slate-800 text-slate-200'} px-4 py-2.5 rounded-2xl text-sm max-w-xs sm:max-w-md break-words border border-slate-700 shadow-sm">
+                    ${m.content ? escapeHtml(m.content) : ''}
+                    ${mediaHTML}
                 </div>
             `;
             box.appendChild(div);
@@ -75,17 +139,50 @@
             e.preventDefault();
             const input = document.getElementById('msg-input');
             const text = input.value.trim();
-            if (!text) return;
+
+            if (!text && !selectedFile) return;
+
+            let mediaUrl = null;
+            let mediaType = null;
+
+            // Upload media if attached
+            if (selectedFile) {
+                const fileExt = selectedFile.name.split('.').pop();
+                const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 7)}.${fileExt}`;
+
+                const { error: uploadError } = await client.storage
+                    .from('chat-media')
+                    .upload(fileName, selectedFile);
+
+                if (uploadError) {
+                    alert('Upload error: ' + uploadError.message);
+                    return;
+                }
+
+                const { data: publicUrlData } = client.storage
+                    .from('chat-media')
+                    .getPublicUrl(fileName);
+
+                mediaUrl = publicUrlData.publicUrl;
+                mediaType = selectedFile.type;
+            }
 
             const { error } = await client
                 .from('messages')
-                .insert([{ username: myName, content: text }]);
+                .insert([{
+                    username: myName,
+                    content: text,
+                    media_url: mediaUrl,
+                    media_type: mediaType
+                }]);
 
             if (error) {
                 alert('Error: ' + error.message);
                 return;
             }
+
             input.value = '';
+            clearMedia();
         }
 
         // Real-time sync listener
