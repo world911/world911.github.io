@@ -12,18 +12,27 @@
     <!-- Header -->
     <header id="app-header" class="bg-[#242526] border-b border-[#393a3b] px-4 py-3 flex justify-between items-center shadow-md transition-colors duration-300">
         <div class="flex items-center gap-3">
-            <div id="header-icon" class="w-10 h-10 rounded-full bg-[#0084ff] flex items-center justify-center font-bold text-white shadow">💬</div>
+            <div id="header-icon" class="w-10 h-10 rounded-full bg-[#0084ff] flex items-center justify-center font-bold text-white shadow flex-shrink-0">💬</div>
             <div>
                 <h1 class="text-base font-semibold leading-tight">Live Chat</h1>
-                <!-- UTC+6 Bangladesh Time & Date Clock -->
-                <span id="live-clock" class="text-xs text-slate-400 font-medium">Loading...</span>
+                <!-- UTC+6 Bangladesh Time & Date Clock on a single line -->
+                <span id="live-clock" class="text-xs text-slate-400 font-medium whitespace-nowrap">Loading...</span>
             </div>
         </div>
         <div class="flex items-center gap-2">
-            <!-- Theme Toggle Button -->
-            <button onclick="toggleTheme()" id="theme-btn" class="bg-[#3a3b3c] hover:bg-[#4e4f50] text-xs px-3 py-1.5 rounded-lg text-slate-200 transition">🎨 Messenger</button>
-            <span id="username-display" class="text-xs text-slate-300 font-medium bg-[#3a3b3c] px-2.5 py-1.5 rounded-lg border border-[#4e4f50]"></span>
-            <button onclick="changeName()" class="bg-[#3a3b3c] hover:bg-[#4e4f50] text-xs px-3 py-1.5 rounded-lg text-slate-200 transition">Name</button>
+            <!-- Theme Toggle Icon Button -->
+            <button onclick="toggleTheme()" id="theme-btn" class="bg-[#3a3b3c] hover:bg-[#4e4f50] p-2 rounded-lg text-slate-200 transition flex items-center justify-center" title="Switch Theme">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 73.593v-3.186a2 2 0 012-2h2.343" />
+                </svg>
+            </button>
+            <span id="username-display" class="text-xs text-slate-300 font-medium bg-[#3a3b3c] px-2.5 py-2 rounded-lg border border-[#4e4f50] truncate max-w-[90px]"></span>
+            <!-- Edit Name Icon Button -->
+            <button onclick="changeName()" class="bg-[#3a3b3c] hover:bg-[#4e4f50] p-2 rounded-lg text-slate-200 transition flex items-center justify-center" title="Edit Name">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+            </button>
         </div>
     </header>
 
@@ -61,7 +70,7 @@
         const SUPABASE_KEY = 'sb_publishable_8v0SCUFZ-LAxGb0VcY5MLg_xyLtRkfy';
         const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // UTC+6 Bangladesh Time & Date Clock
+        // UTC+6 Bangladesh Time & Date Clock (Single Line)
         function updateLiveClock() {
             const now = new Date();
             const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
@@ -100,7 +109,6 @@
             const header = document.getElementById('app-header');
             const footer = document.getElementById('app-footer');
             const preview = document.getElementById('media-preview-container');
-            const themeBtn = document.getElementById('theme-btn');
             const headerIcon = document.getElementById('header-icon');
             const sendBtn = document.getElementById('send-btn');
 
@@ -109,18 +117,14 @@
                 header.className = "bg-[#202c33] border-b border-[#222d34] px-4 py-3 flex justify-between items-center shadow-md transition-colors duration-300";
                 footer.className = "bg-[#202c33] border-t border-[#222d34] p-3 transition-colors duration-300";
                 preview.className = "px-4 hidden bg-[#202c33] py-2 border-t border-[#222d34] flex items-center justify-between transition-colors duration-300";
-                themeBtn.textContent = "🎨 WhatsApp";
-                themeBtn.className = "bg-[#2a3942] hover:bg-[#374248] text-xs px-3 py-1.5 rounded-lg text-slate-200 transition";
-                headerIcon.className = "w-10 h-10 rounded-full bg-emerald-600 flex items-center justify-center font-bold text-white shadow";
+                headerIcon.className = "w-10 h-10 rounded-full bg-emerald-600 flex items-center justify-center font-bold text-white shadow flex-shrink-0";
                 sendBtn.className = "bg-emerald-600 hover:bg-emerald-500 text-white px-5 py-2.5 rounded-lg text-sm font-medium transition shadow flex items-center justify-center";
             } else {
                 body.className = "bg-[#18191a] text-[#e4e6eb] h-screen flex flex-col justify-between transition-colors duration-300";
                 header.className = "bg-[#242526] border-b border-[#393a3b] px-4 py-3 flex justify-between items-center shadow-md transition-colors duration-300";
                 footer.className = "bg-[#242526] border-t border-[#393a3b] p-3 transition-colors duration-300";
                 preview.className = "px-4 hidden bg-[#242526] py-2 border-t border-[#393a3b] flex items-center justify-between transition-colors duration-300";
-                themeBtn.textContent = "🎨 Messenger";
-                themeBtn.className = "bg-[#3a3b3c] hover:bg-[#4e4f50] text-xs px-3 py-1.5 rounded-lg text-slate-200 transition";
-                headerIcon.className = "w-10 h-10 rounded-full bg-[#0084ff] flex items-center justify-center font-bold text-white shadow";
+                headerIcon.className = "w-10 h-10 rounded-full bg-[#0084ff] flex items-center justify-center font-bold text-white shadow flex-shrink-0";
                 sendBtn.className = "bg-[#0084ff] hover:bg-[#006dd6] text-white px-5 py-2.5 rounded-full text-sm font-medium transition shadow flex items-center justify-center";
             }
         }
